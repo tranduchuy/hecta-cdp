@@ -1,0 +1,49 @@
+{
+  "appenders": [
+    {
+      "type": "console"
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/app.log",
+      "category": "app",
+      "alwaysIncludePattern": true
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/Controllers.log",
+      "category": "Controllers",
+      "alwaysIncludePattern": true
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/Models.log",
+      "category": "Models",
+      "alwaysIncludePattern": true
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/Middleware.log",
+      "category": "Middleware",
+      "alwaysIncludePattern": true
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/Services.log",
+      "category": "Services",
+      "alwaysIncludePattern": true
+    },
+    {
+      "type": "dateFile",
+      "maxLogSize": 20480,
+      "filename": "./logs/Utils.log",
+      "category": "Utils",
+      "alwaysIncludePattern": true
+    }
+  ]
+}

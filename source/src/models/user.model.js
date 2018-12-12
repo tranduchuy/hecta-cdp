@@ -25,11 +25,13 @@ const userSchema = {
   },
   createdAt: {
     type: Sequelize.DataTypes.DATE,
-    field: 'CREATED_AT'
+    field: 'CREATED_AT',
+    defaultValue: Sequelize.DataTypes.NOW
   },
   updatedAt: {
     type: Sequelize.DataTypes.DATE,
-    field: 'UPDATED_AT'
+    field: 'UPDATED_AT',
+    defaultValue: Sequelize.DataTypes.NOW
   },
   passwordHash: {
     type: Sequelize.DataTypes.STRING(200),
@@ -66,6 +68,26 @@ const userSchema = {
   age: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'AGE'
+  },
+  role: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'ROLE'
+  },
+  city: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'CITY'
+  },
+  district: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'DISTRICT'
+  },
+  avatar: {
+    type: Sequelize.DataTypes.TEXT,
+    field: 'AVATAR'
+  },
+  birthday: {
+    type: Sequelize.DataTypes.DATE,
+    field: 'BIRTHDAY'
   }
 };
 

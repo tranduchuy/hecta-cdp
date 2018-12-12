@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const config = require('config');
 const logger = require('morgan');
+const HttpCodeConstant = require('./src/constants/http-code.constant');
 
 
 // config log4js
@@ -17,6 +18,15 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use('/', require('./src/routes/index'));
+
+// error handler
+app.use((err, req, res) => {
+  return res.json({
+    status: HttpCodeConstant.Error,
+    messages: [err.message],
+    data: {}
+  });
+});
 
 const port = config.get('app').port || 3000;
 app.set('port', port);

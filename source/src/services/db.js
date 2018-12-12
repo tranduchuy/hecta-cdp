@@ -14,14 +14,17 @@ const seqInitializer = new sequelize(
     operatorsAliases: false
   });
 
-module.exports = (callback) => {
-  seqInitializer
-    .authenticate()
-    .then(() => {
-      logger.info('Connect database successfully');
-      callback();
-    })
-    .catch((err) => {
-      logger.error('Connect database failure', err);
-    });
+module.exports = {
+  connect: (callback) => {
+    seqInitializer
+      .authenticate()
+      .then(() => {
+        logger.info('Connect database successfully');
+        callback();
+      })
+      .catch((err) => {
+        logger.error('Connect database failure', err);
+      });
+  },
+  sequelize: seqInitializer
 };

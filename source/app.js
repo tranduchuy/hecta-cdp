@@ -16,13 +16,14 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
+app.use('/', require('./src/routes/index'));
 
 const port = config.get('app').port || 3000;
 app.set('port', port);
 
-require('./src/services/db')(() => {
-    const server = http.createServer(app);
-    server.listen(port, () => {
-        console.log(`CDP is running on port ${port}`);
-    });
+require('./src/services/db').connect(() => {
+  const server = http.createServer(app);
+  server.listen(port, () => {
+    console.log(`CDP is running on port ${port}`);
+  });
 });

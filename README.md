@@ -1,5 +1,5 @@
 # transaction-user-core
-
+_ mysql version: 5.7
 
 + express-jwt:
     _ http://jasonwatmore.com/post/2018/08/06/nodejs-jwt-authentication-tutorial-with-example-api

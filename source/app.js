@@ -20,7 +20,7 @@ app.use(cookieParser());
 const port = config.get('app').port || 3000;
 app.set('port', port);
 
-require('./config/db')(() => {
+require('./src/services/db')(() => {
     const server = http.createServer(app);
     server.listen(port, () => {
         console.log(`CDP is running on port ${port}`);

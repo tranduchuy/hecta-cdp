@@ -20,7 +20,7 @@ app.use(cookieParser());
 app.use('/', require('./src/routes/index'));
 
 // error handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   return res.json({
     status: HttpCodeConstant.Error,
     messages: [err.message],

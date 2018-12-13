@@ -1,5 +1,8 @@
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
+const UserTypeConstant = require('../constants/user-type.constant');
+const UserRoleConstant = require('../constants/user-role.constant');
+const StatusConstant = require('../constants/status.constant');
 
 const userSchema = {
   id: {
@@ -59,7 +62,8 @@ const userSchema = {
   },
   phone: {
     type: Sequelize.DataTypes.STRING(11),
-    field: 'PHONE'
+    field: 'PHONE',
+    defaultValue: ''
   },
   gender: {
     type: Sequelize.DataTypes.INTEGER,
@@ -71,7 +75,8 @@ const userSchema = {
   },
   role: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'ROLE'
+    field: 'ROLE',
+    defaultValue: UserRoleConstant.EndUser
   },
   city: {
     type: Sequelize.DataTypes.INTEGER,
@@ -88,6 +93,21 @@ const userSchema = {
   birthday: {
     type: Sequelize.DataTypes.DATE,
     field: 'BIRTHDAY'
+  },
+  type: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'TYPE',
+    defaultValue: UserTypeConstant.Personal
+  },
+  status: {
+    type: Sequelize.DataTypes.ENUM,
+    values: [
+      StatusConstant.Active,
+      StatusConstant.PendingOrWaitConfirm,
+      StatusConstant.Blocked,
+      StatusConstant.Delete
+    ],
+    defaultValue: StatusConstant.PendingOrWaitConfirm
   }
 };
 

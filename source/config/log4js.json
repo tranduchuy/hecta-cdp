@@ -7,7 +7,7 @@
       "type": "dateFile",
       "maxLogSize": 20480,
       "filename": "./logs/app.log",
-      "category": "app",
+      "category": "App",
       "alwaysIncludePattern": true
     },
     {

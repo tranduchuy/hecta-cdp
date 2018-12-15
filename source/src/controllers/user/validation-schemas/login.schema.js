@@ -14,9 +14,14 @@ module.exports = {
       minLength: 6
     }
   },
-  required: ['password'],
-  oneOf: [
-    {required: ['email']},
-    {required: ['username']}
-  ]
+  required: ['password', 'email'],
+  errorMessage: {
+    required: {
+      email: "Email is required",
+      password: "Password is required"
+    },
+    minLength: {
+      password: "minlenth password"
+    }
+  }
 };

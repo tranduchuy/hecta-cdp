@@ -4,6 +4,8 @@ const log4js = require('log4js');
 const logger = log4js.getLogger('Services');
 const bcrypt = require('bcrypt');
 const MailService = require('../../services/mailer.service');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 // constant files
 const UserConstant = require('./user.constant');
@@ -38,7 +40,10 @@ const isValidHashPassword = (hashed, plainText) => {
  */
 const createUser = async ({email, password, type, name, username, phone}) => {
   const salt = bcrypt.genSaltSync(UserConstant.saltLength);
-  const tokenEmailConfirm = RandomString.generate({length: UserConstant.tokenConfirmEmailLength, charset: 'alphabetic'});
+  const tokenEmailConfirm = RandomString.generate({
+    length: UserConstant.tokenConfirmEmailLength,
+    charset: 'alphabetic'
+  });
 
   const newUser = UserModel.build({
     email,
@@ -57,17 +62,36 @@ const createUser = async ({email, password, type, name, username, phone}) => {
   return await newUser.save();
 };
 
-
+/**
+ * Find user in database by user name or email. Get one
+ * @param email string
+ * @param username string
+ * @returns {Promise<*>}
+ */
 const findByEmailOrUsername = async (email, username) => {
-  return await UserModel.findAll({
+  return await UserModel.findOne({
     where: {
       [Sequelize.Op.or]: [{email}, {username}]
     }
   });
 };
 
+/**
+ * Generate token by data
+ * @param data object
+ * @returns {string}
+ */
+const generateToken = (data) => {
+  const secretKey = config.get('jwt').secret;
+  return jwt.sign(JSON.stringify(data), secretKey, {
+    algorithm: 'RS256',
+    expiresIn: (60 * 60) * UserConstant.tokenExpiredInHour
+  });
+};
+
 module.exports = {
   isValidHashPassword,
   createUser,
-  findByEmailOrUsername
+  findByEmailOrUsername,
+  generateToken
 };

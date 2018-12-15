@@ -1,18 +1,17 @@
-const bcrypt = require('bcrypt');
 const UserService = require('./user.service');
 const UserModel = require('../../models/user.model');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const log4js = require('log4js');
 const logger = log4js.getLogger('Controllers');
-const Ajv = require('ajv');
-const ajv = Ajv({allErrors: true});
+const AJV = require('../../core/ajv');
 
 // constants
 const StatusConstant = require('../../constants/status.constant');
 
 // validate schema
-const loginSchema = require('./validation-schemas/login');
-const registerSchema = require('./validation-schemas/register');
+const loginSchema = require('./validation-schemas/login.schema');
+const registerSchema = require('./validation-schemas/register.schema');
+const confirmEmailSchema = require('./validation-schemas/confirm-email.schema');
 
 /**
  *
@@ -25,42 +24,51 @@ const login = async (req, res, next) => {
   logger.info('UserController::login::called');
 
   try {
-    const valid = ajv.validate(loginSchema, req.body);
-
-    if (!valid) {
+    const errors = AJV(loginSchema, req.body);
+    if (errors.length !== 0) {
       return res.json({
         status: HttpCodeConstant.Error,
-        messages: ajv.errors.map(t => t.message),
+        messages: errors,
         data: {}
       });
     }
 
     const {email, username, password} = req.body;
-    const users = await UserService.findByEmailOrUsername(email, username);
-    if (users.length === 0) {
+    const user = await UserService.findByEmailOrUsername(email, username);
+    if (!user) {
       logger.warn('UserController::login::warn. User not found');
       return next(new Error('User not found'));
     }
 
-    const user = users[0];
     if (!UserService.isValidHashPassword(user.passwordHash, password)) {
       logger.error(`UserController::login::error. Wrong password. Try input password "${password}" for user "${user.id}"`);
       return next(new Error('Wrong password'));
     }
 
     if (user.status !== StatusConstant.Active) {
-      logger.error(`UserController::login::error. User is not active. User: ${user.id}`);
+      logger.error(`UserController::login::error. Inactive user is try to log in. User: ${user.id}`);
       return next(new Error('User inactive'));
     }
 
-    // TODO: generate login token, and save it
+    // TODO: return them info money
+    const userInfoResponse = {
+      email: user.email,
+      username: user.username,
+      name: user.name,
+      phone: user.phone,
+      address: user.address
+    };
+    const token = UserService.generateToken(userInfoResponse);
+    logger.info(`UserController::login::success. User ${user.email} logged in`);
 
     return res.json({
       status: HttpCodeConstant.Success,
       messages: ['Successfully'],
       data: {
-        meta: {},
-        entries: [user]
+        meta: {
+          token
+        },
+        entries: [userInfoResponse]
       }
     });
   } catch (e) {
@@ -71,7 +79,7 @@ const login = async (req, res, next) => {
 
 /**
  *
- * @param req {body: {email, password, type, name, username, phone}}
+ * @param req
  * @param res
  * @param next
  * @returns {Promise<*>}
@@ -80,20 +88,16 @@ const register = async (req, res, next) => {
   logger.info('UserController::login::called');
 
   try {
-    const valid = ajv.validate(registerSchema, req.body);
-
-    if (!valid) {
+    const errors = AJV(registerSchema, req.body);
+    if (errors.length !== 0) {
       return res.json({
         status: HttpCodeConstant.Error,
-        messages: ajv.errors.map(t => t.message),
+        messages: errors,
         data: {}
       });
     }
 
     const {email, password, confirmedPassword, name, username, phone} = req.body;
-
-    // TODO: create token to confirm by email. Send email
-
     if (password !== confirmedPassword) {
       logger.error('UserController::register::error. 2 passwords not same');
       return next(new Error('2 passwords not same'));
@@ -115,7 +119,6 @@ const register = async (req, res, next) => {
         entries: [{email, name, username, phone}]
       }
     });
-
   } catch (e) {
     logger.error('UserController::login::error', e);
     return next(e);
@@ -123,17 +126,26 @@ const register = async (req, res, next) => {
 };
 
 /**
- * Confirm token in email after registering
+ * Confirm token in email after registering. Will update status ACTIVE and
  * @param req
  * @param res
  * @param next
  * @returns {Promise<*>}
  */
 const confirmRegister = async(req, res, next) => {
-  logger.info('UserController::confirmRegister::called');
-
   try {
     const {token} = req.query;
+    logger.info(`UserController::confirmRegister::called. Token request: ${token}`);
+
+    const schemaErrors = AJV(confirmEmailSchema, req.query);
+    if (schemaErrors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: schemaErrors,
+        data: {}
+      });
+    }
+
     const user = await UserModel.findOne({
       where: {
         tokenEmailConfirm: token
@@ -150,6 +162,8 @@ const confirmRegister = async(req, res, next) => {
       tokenEmailConfirm: ''
     });
 
+    logger.error(`UserController::confirmRegister::success. User ${user.email || user.id} confirm email success`);
+
     return res.json({
       status: HttpCodeConstant.Success,
       messages: ['Success'],
@@ -157,7 +171,7 @@ const confirmRegister = async(req, res, next) => {
         meta: {},
         entries: []
       }
-    })
+    });
   } catch (e) {
     logger.error('UserController::confirmRegister::error', e);
     return next(e);

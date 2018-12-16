@@ -6,6 +6,7 @@ const HttpCodeConstant = require('../constants/http-code.constant');
 const UserModel = require('../models/user.model');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.App);
+const WhiteList = require('./user-white-list');
 
 const responseAccessDenied = {
   status: HttpCodeConstant.Error,
@@ -16,8 +17,18 @@ const responseAccessDenied = {
   }
 };
 
+const checkExistInWhiteList = (path) => {
+  return WhiteList.some(p => {
+    return path.indexOf(p) !== -1;
+  });
+};
+
 module.exports = async (req, res, next) => {
   const token = req.get(GlobalConstant.ApiTokenName);
+
+  if (checkExistInWhiteList(req.path)) {
+
+  }
 
   try {
     let userInfo = jwt.verify(token, config.get('jwt').secret);

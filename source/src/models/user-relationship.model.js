@@ -1,3 +1,4 @@
+const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
@@ -5,15 +6,24 @@ const userRelationShipSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'ID',
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   parentId: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'PARENT_ID'
+    field: 'PARENT_ID',
+    references: {
+      model: UserModel,
+      key: 'id'
+    }
   },
   childId: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'PARENT_ID'
+    field: 'CHILD_ID',
+    references: {
+      model: UserModel,
+      key: 'id'
+    }
   },
   credit: {
     type: Sequelize.DataTypes.DECIMAL(20, 0),

@@ -8,11 +8,8 @@ const userSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'ID',
-    primaryKey: true
-  },
-  subId: {
-    type: Sequelize.DataTypes.STRING(60),
-    field: 'SUB_ID',
+    primaryKey: true,
+    autoIncrement: true
   },
   email: {
     type: Sequelize.DataTypes.STRING(100),

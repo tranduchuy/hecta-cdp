@@ -1,3 +1,4 @@
+const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
@@ -5,7 +6,8 @@ const balanceSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'ID',
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   main1: {
     type: Sequelize.DataTypes.DECIMAL(20, 0),
@@ -24,7 +26,7 @@ const balanceSchema = {
   },
   createdAt: {
     type: Sequelize.DataTypes.DATE,
-    field: 'UPDATED_AT',
+    field: 'CREATED_AT',
     defaultValue: Sequelize.DataTypes.NOW
   },
   updatedAt: {
@@ -34,7 +36,11 @@ const balanceSchema = {
   },
   userId: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'USER_ID'
+    field: 'USER_ID',
+    references: {
+      model: UserModel,
+      key: 'id'
+    }
   }
 };
 

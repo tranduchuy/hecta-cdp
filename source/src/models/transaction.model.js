@@ -1,3 +1,4 @@
+const UserModel = require('user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
@@ -5,7 +6,8 @@ const transactionSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'ID',
-    primaryKey: true
+    primaryKey: true,
+    autoIncrement: true
   },
   createdAt: {
     type: Sequelize.DataTypes.DATE,
@@ -28,11 +30,19 @@ const transactionSchema = {
   },
   userId: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'USER_ID'
+    field: 'USER_ID',
+    references: {
+      model: UserModel,
+      key: 'id'
+    }
   },
   fromUserId: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'FROM_USER_ID'
+    field: 'FROM_USER_ID',
+    references: {
+      model: UserModel,
+      key: 'id'
+    }
   },
   amount: {
     type: Sequelize.DataTypes.DECIMAL(20, 0),

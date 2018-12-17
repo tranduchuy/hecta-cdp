@@ -1,4 +1,5 @@
 const UserModel = require('../../models/user.model');
+const BalanceModel = require('../../models/balance.model');
 const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const logger = log4js.getLogger('Services');
@@ -89,9 +90,15 @@ const generateToken = (data) => {
   });
 };
 
+const createBalanceInfo = async (userId) => {
+  const newBalance = BalanceModel.build({userId});
+  return await newBalance.save();
+};
+
 module.exports = {
   isValidHashPassword,
   createUser,
   findByEmailOrUsername,
-  generateToken
+  generateToken,
+  createBalanceInfo
 };

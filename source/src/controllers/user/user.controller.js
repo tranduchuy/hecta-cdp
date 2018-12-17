@@ -108,7 +108,9 @@ const register = async (req, res, next) => {
       logger.error('UserController::register::error. Duplicate email');
       return next(new Error('Duplicate email'));
     }
-    await UserService.createUser(req.body);
+
+    const newUser = await UserService.createUser(req.body);
+    await UserService.createBalanceInfo(newUser.id);
 
     logger.info(`UserController::register::success. Email: ${email}`);
     return res.json({

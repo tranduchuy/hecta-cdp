@@ -50,13 +50,13 @@ const login = async (req, res, next) => {
       return next(new Error('User inactive'));
     }
 
-    // TODO: return them info money
     const userInfoResponse = {
       email: user.email,
       username: user.username,
       name: user.name,
       phone: user.phone,
-      address: user.address
+      address: user.address,
+      balance: await UserService.getBalanceInfo(user.id)
     };
     const token = UserService.generateToken(userInfoResponse);
     logger.info(`UserController::login::success. User ${user.email} logged in`);

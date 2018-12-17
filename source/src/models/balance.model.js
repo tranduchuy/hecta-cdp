@@ -44,7 +44,7 @@ const balanceSchema = {
   }
 };
 
-const Balance = sequelize.define('user', balanceSchema, {
+const Balance = sequelize.define('balance', balanceSchema, {
   freezeTableName: true,
   tableName: 'BALANCE'
 });

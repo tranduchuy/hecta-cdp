@@ -84,8 +84,7 @@ const findByEmailOrUsername = async (email, username) => {
  */
 const generateToken = (data) => {
   const secretKey = config.get('jwt').secret;
-  return jwt.sign(JSON.stringify(data), secretKey, {
-    algorithm: 'RS256',
+  return jwt.sign(data, secretKey, {
     expiresIn: (60 * 60) * UserConstant.tokenExpiredInHour
   });
 };
@@ -95,10 +94,20 @@ const createBalanceInfo = async (userId) => {
   return await newBalance.save();
 };
 
+const getBalanceInfo = async (userId) => {
+  const balance = await BalanceModel.findOne({userId});
+  return {
+    main1: parseInt(balance.main1, 0),
+    main2: parseInt(balance.main2, 0),
+    promo: parseInt(balance.promo, 0)
+  };
+};
+
 module.exports = {
   isValidHashPassword,
   createUser,
   findByEmailOrUsername,
   generateToken,
-  createBalanceInfo
+  createBalanceInfo,
+  getBalanceInfo
 };

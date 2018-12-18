@@ -2,16 +2,19 @@ const UserService = require('./user.service');
 const UserModel = require('../../models/user.model');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const log4js = require('log4js');
+const bcrypt = require('bcrypt');
 const logger = log4js.getLogger('Controllers');
 const AJV = require('../../core/ajv');
 
 // constants
 const StatusConstant = require('../../constants/status.constant');
+const UserRoleConstant = require('../../constants/user-role.constant');
 
 // validate schema
 const loginSchema = require('./validation-schemas/login.schema');
 const registerSchema = require('./validation-schemas/register.schema');
 const confirmEmailSchema = require('./validation-schemas/confirm-email.schema');
+const updateInfoSchema = require('./validation-schemas/update-info.schema');
 
 /**
  *
@@ -56,6 +59,7 @@ const login = async (req, res, next) => {
       name: user.name,
       phone: user.phone,
       address: user.address,
+      type: user.type,
       balance: await UserService.getBalanceInfo(user.id)
     };
     const token = UserService.generateToken(userInfoResponse);
@@ -75,6 +79,7 @@ const login = async (req, res, next) => {
     logger.error('UserController::login::error', e);
     return next(e);
   }
+  bcrypt
 };
 
 /**
@@ -134,7 +139,7 @@ const register = async (req, res, next) => {
  * @param next
  * @returns {Promise<*>}
  */
-const confirmRegister = async(req, res, next) => {
+const confirmRegister = async (req, res, next) => {
   try {
     const {token} = req.query;
     logger.info(`UsergetBalanceInfoController::confirmRegister::called. Token request: ${token}`);
@@ -180,6 +185,13 @@ const confirmRegister = async(req, res, next) => {
   }
 };
 
+/**
+ * Get info of user who is logging in
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
 const getInfoLoggedIn = async (req, res, next) => {
   logger.info('UserController::getInfoLoggedIn::called');
 
@@ -207,9 +219,105 @@ const getInfoLoggedIn = async (req, res, next) => {
   }
 };
 
+/**
+ * Update info of user
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const updateInfo = async (req, res, next) => {
+  // TODO: should be test
+  logger.info('UserController::updateInfo::called');
+
+  try {
+    const errors = AJV(updateInfoSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {}
+      });
+    }
+
+    const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type} = req.body;
+    const {id} = req.params;
+
+    // only admin or master can update status of user
+    const canUpdateStatus = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
+    if (!canUpdateStatus) {
+      logger.error('UserController::updateInfo::error. Permission denied');
+      return next(new Error('Permission denied'));
+    }
+
+    const targetUser = await UserModel.findById(id);
+    if (!targetUser) {
+      logger.error('UserController::updateInfo::error. User not found');
+      return next(new Error('User not found'));
+    }
+
+    if (type) {
+      const errors = UserService.isValidUpdateType(targetUser);
+      if (errors.length !== 0) {
+        logger.error('UserController::updateInfo::error', errors.join('\n'));
+        return res.json({
+          status: HttpCodeConstant.Error,
+          messages: errors,
+          data: {
+            meta: {},
+            entries: []
+          }
+        });
+      }
+    }
+
+    if (password) {
+      if (password !== confirmedPassword) {
+        return next(new Error('Two password not same'));
+      } else if (!bcrypt.compareSync(oldPassword, targetUser.password)) {
+        return next(new Error('Wrong old password'));
+      }
+    }
+
+    const dataToUpdate = {
+      name: name || targetUser.user,
+      address: address || targetUser.address,
+      phone: phone || targetUser.phone,
+      gender: gender || targetUser.gender,
+      password: password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash,
+      type: type || targetUser.type,
+      status: canUpdateStatus ? status : targetUser.status
+    };
+
+    await UserModel.update(dataToUpdate);
+    logger.info('UserController::updateInfo::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          email: targetUser.email,
+          name: targetUser.name,
+          username: targetUser.username,
+          phone: targetUser.phone,
+          address: targetUser.address,
+          gender: targetUser.gender,
+          type: targetUser.type
+        }]
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::updateInfo::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
-  getInfoLoggedIn
+  getInfoLoggedIn,
+  updateInfo
 };

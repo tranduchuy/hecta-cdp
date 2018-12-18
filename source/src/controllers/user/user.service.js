@@ -1,8 +1,8 @@
 const UserModel = require('../../models/user.model');
 const BalanceModel = require('../../models/balance.model');
+const UserRelationShipModel = require('./user-relationship.model');
 const Sequelize = require('sequelize');
 const log4js = require('log4js');
-const logger = log4js.getLogger('Services');
 const bcrypt = require('bcrypt');
 const MailService = require('../../services/mailer.service');
 const jwt = require('jsonwebtoken');
@@ -13,7 +13,8 @@ const {sequelize} = require('../../services/db');
 const UserConstant = require('./user.constant');
 const RandomString = require('randomstring');
 const StatusConstant = require('../../constants/status.constant');
-
+const GlobalConstant = require('../../constants/global.constant');
+const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
 /**
  * Compare hash password with input plain text
  * @param hashed
@@ -105,11 +106,48 @@ const getBalanceInfo = async (userId) => {
   };
 };
 
+/**
+ * Check user can update type or not. Will be NOT permitted to be updated if
+ * + parent of children
+ * + child of a parent
+ * @param userId
+ * @returns {Promise<Array>}
+ */
+const isValidUpdateType = async (userId) => {
+  try {
+    const findParentResult = await UserRelationShipModel.findAndCountAll({
+      where: {
+        userId
+      }
+    });
+
+    if (findParentResult.count > 0) {
+      return ['Your are child of another account'];
+    }
+
+    const findChildrenResult = await UserRelationShipModel.findAndCountAll({
+      where: {
+        parentId: userId
+      }
+    });
+
+    if (findChildrenResult.count > 0) {
+      return ['Your are parent of another accounts'];
+    }
+
+    return [];
+  } catch (e) {
+    logger.error('UserService::isValidUpdateType::error', e);
+    return [e.message];
+  }
+};
+
 module.exports = {
   isValidHashPassword,
   createUser,
   findByEmailOrUsername,
   generateToken,
   createBalanceInfo,
-  getBalanceInfo
+  getBalanceInfo,
+  isValidUpdateType
 };

@@ -236,7 +236,7 @@ const updateInfo = async (req, res, next) => {
       return res.json({
         status: HttpCodeConstant.Error,
         messages: errors,
-        data: {}
+        data: {meta: {}, entries: []}
       });
     }
 
@@ -244,15 +244,15 @@ const updateInfo = async (req, res, next) => {
     const {id} = req.params;
 
     // only admin or master can update status of user
-    const canUpdateStatus = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
-    if (!canUpdateStatus) {
+    const availableToUpdateStatus = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
+    if (!availableToUpdateStatus) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));
     }
 
     const targetUser = await UserModel.findById(id);
     if (!targetUser) {
-      logger.error('UserController::updateInfo::error. User not found');
+      logger.error(`UserController::updateInfo::error. User not found. Find by id: ${id}`);
       return next(new Error('User not found'));
     }
 
@@ -260,6 +260,7 @@ const updateInfo = async (req, res, next) => {
       const errors = UserService.isValidUpdateType(targetUser);
       if (errors.length !== 0) {
         logger.error('UserController::updateInfo::error', errors.join('\n'));
+
         return res.json({
           status: HttpCodeConstant.Error,
           messages: errors,
@@ -286,7 +287,7 @@ const updateInfo = async (req, res, next) => {
       gender: gender || targetUser.gender,
       password: password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash,
       type: type || targetUser.type,
-      status: canUpdateStatus ? status : targetUser.status
+      status: availableToUpdateStatus ? status : targetUser.status
     };
 
     await UserModel.update(dataToUpdate);

@@ -17,7 +17,7 @@ const GlobalConstant = require('../../constants/global.constant');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
 /**
  * Compare hash password with input plain text
- * @param hashed
+ * @param {string} hashed
  * @param plainText
  * @returns {boolean}
  * @private
@@ -67,8 +67,8 @@ const createUser = async ({email, password, type, name, username, phone}) => {
 
 /**
  * Find user in database by user name or email. Get one
- * @param email string
- * @param username string
+ * @param {string} email
+ * @param {string} username
  * @returns {Promise<*>}
  */
 const findByEmailOrUsername = async (email, username) => {
@@ -81,7 +81,7 @@ const findByEmailOrUsername = async (email, username) => {
 
 /**
  * Generate token by data
- * @param data object
+ * @param {object} data
  * @returns {string}
  */
 const generateToken = (data) => {
@@ -110,7 +110,7 @@ const getBalanceInfo = async (userId) => {
  * Check user can update type or not. Will be NOT permitted to be updated if
  * + parent of children
  * + child of a parent
- * @param userId
+ * @param {string | number} userId
  * @returns {Promise<Array>}
  */
 const isValidUpdateType = async (userId) => {

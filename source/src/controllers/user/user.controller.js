@@ -137,7 +137,7 @@ const register = async (req, res, next) => {
 const confirmRegister = async(req, res, next) => {
   try {
     const {token} = req.query;
-    logger.info(`UserController::confirmRegister::called. Token request: ${token}`);
+    logger.info(`UsergetBalanceInfoController::confirmRegister::called. Token request: ${token}`);
 
     const schemaErrors = AJV(confirmEmailSchema, req.query);
     if (schemaErrors.length !== 0) {
@@ -164,7 +164,7 @@ const confirmRegister = async(req, res, next) => {
       tokenEmailConfirm: ''
     });
 
-    logger.error(`UserController::confirmRegister::success. User ${user.email || user.id} confirm email success`);
+    logger.info(`UserController::confirmRegister::success. User ${user.email || user.id} confirm email success`);
 
     return res.json({
       status: HttpCodeConstant.Success,

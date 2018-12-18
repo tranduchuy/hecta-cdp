@@ -26,7 +26,7 @@ const userRelationShipSchema = {
     }
   },
   credit: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'CREDIT'
   },
   status: {
@@ -34,7 +34,7 @@ const userRelationShipSchema = {
     field: 'STATUS'
   },
   usedCredit: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'USED_CREDIT'
   },
   createdAt: {

@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const MailService = require('../../services/mailer.service');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const {sequelize} = require('../../services/db');
 
 // constant files
 const UserConstant = require('./user.constant');
@@ -96,10 +97,11 @@ const createBalanceInfo = async (userId) => {
 
 const getBalanceInfo = async (userId) => {
   const balance = await BalanceModel.findOne({userId});
+
   return {
-    main1: parseInt(balance.main1, 0),
-    main2: parseInt(balance.main2, 0),
-    promo: parseInt(balance.promo, 0)
+    main1: balance.main1,
+    main2: balance.main2,
+    promo: balance.promo
   };
 };
 

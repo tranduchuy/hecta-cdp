@@ -45,7 +45,7 @@ const transactionSchema = {
     }
   },
   amount: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'AMOUNT'
   },
   note: {
@@ -54,42 +54,42 @@ const transactionSchema = {
     defaultValue: ''
   },
   bCredit: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'B_CREDIT',
     defaultValue: 0
   },
   bMain1: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'B_MAIN_1',
     defaultValue: 0
   },
   bMain2: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'B_MAIN_2',
     defaultValue: 0
   },
   bPromo: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'B_PROMO',
     defaultValue: 0
   },
   aCredit: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'A_CREDIT',
     defaultValue: 0
   },
   aMain1: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'A_MAIN_1',
     defaultValue: 0
   },
   aMain2: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'A_MAIN_2',
     defaultValue: 0
   },
   aPromo: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'A_PROMO',
     defaultValue: 0
   }

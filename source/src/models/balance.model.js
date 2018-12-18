@@ -10,17 +10,17 @@ const balanceSchema = {
     autoIncrement: true
   },
   main1: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'MAIN_1',
     defaultValue: 0
   },
   main2: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'MAIN_2',
     defaultValue: 0
   },
   promo: {
-    type: Sequelize.DataTypes.DECIMAL(20, 0),
+    type: Sequelize.DataTypes.BIGINT,
     field: 'PROMO',
     defaultValue: 0
   },

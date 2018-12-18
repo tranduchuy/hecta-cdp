@@ -27,12 +27,13 @@ module.exports = async (req, res, next) => {
   const token = req.get(GlobalConstant.ApiTokenName);
 
   if (checkExistInWhiteList(req.path)) {
-
+    return next();
   }
 
   try {
     let userInfo = jwt.verify(token, config.get('jwt').secret);
-    userInfo = JSON.parse(userInfo);
+    console.log(userInfo);
+    // userInfo = JSON.parse(userInfo);
 
     const user = await UserModel.findOne({
       where: {

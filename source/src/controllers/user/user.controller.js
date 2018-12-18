@@ -180,8 +180,36 @@ const confirmRegister = async(req, res, next) => {
   }
 };
 
+const getInfoLoggedIn = async (req, res, next) => {
+  logger.info('UserController::getInfoLoggedIn::called');
+
+  try {
+    const userInfoResponse = {
+      email: req.user.email,
+      username: req.user.username,
+      name: req.user.name,
+      phone: req.user.phone,
+      address: req.user.address,
+      balance: await UserService.getBalanceInfo(req.user.id)
+    };
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [userInfoResponse]
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getInfoLoggedIn::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
-  confirmRegister
+  confirmRegister,
+  getInfoLoggedIn
 };

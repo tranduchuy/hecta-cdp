@@ -315,10 +315,84 @@ const updateInfo = async (req, res, next) => {
   }
 };
 
+/**
+ * Check duplicate username or email
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const checkDuplicateEmailOrUsername = async (req, res, next) => {
+  logger.info('UserController::checkDuplicateEmailOrUsername::called');
+
+  try {
+    const {username, email} = req.query;
+
+    if (username) {
+      const user = await UserService.findByEmailOrUsername('___', username);
+      if (user) {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Duplicate username'],
+          data: {
+            meta: {
+              isDuplicate: true
+            },
+            entries: []
+          }
+        })
+      } else {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Valid username'],
+          data: {
+            meta: {
+              isDuplicate: false
+            },
+            entries: []
+          }
+        });
+      }
+    } else if (email) {
+      const user = await UserService.findByEmailOrUsername(email, '___');
+      if (user) {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Duplicate email'],
+          data: {
+            meta: {
+              isDuplicate: true
+            },
+            entries: []
+          }
+        });
+      } else {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Valid email'],
+          data: {
+            meta: {
+              isDuplicate: false
+            },
+            entries: []
+          }
+        });
+      }
+    }
+
+    logger.error('UserController::checkDuplicateEmailOrUsername::error. Nothing to check');
+    return next(new Error('Nothing to check duplicate'));
+  } catch (e) {
+    logger.error('UserController::checkDuplicateEmailOrUsername::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
   getInfoLoggedIn,
-  updateInfo
+  updateInfo,
+  checkDuplicateEmailOrUsername
 };

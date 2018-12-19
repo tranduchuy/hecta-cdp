@@ -1,6 +1,6 @@
 const UserModel = require('../../models/user.model');
 const BalanceModel = require('../../models/balance.model');
-const UserRelationShipModel = require('./user-relationship.model');
+const UserRelationShipModel = require('../../models/user-relationship.model');
 const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const bcrypt = require('bcrypt');

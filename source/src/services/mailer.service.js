@@ -41,21 +41,30 @@ const sendConfirmEmail = (email, token) => {
   });
 };
 
+
 /**
  * Send email to reset password
  * @param email
  * @param token
- * @param cb
+ * @returns {Promise<any>}
  */
-const sendResetPassword = (email, token, cb) => {
-  const mailOptions = {
-    from: 'snowyflowervietnam.com@gmail.com',
-    to: email,
-    subject: "Hecta VN - Đổi mật khẩu",
-    text: "http://hecta.vn/reset-password/" + token
-  };
+const sendResetPassword = (email, token) => {
+  return new Promise(((resolve, reject) => {
+    const mailOptions = {
+      from: 'snowyflowervietnam.com@gmail.com',
+      to: email,
+      subject: "Hecta VN - Đổi mật khẩu",
+      text: "http://hecta.vn/reset-password/" + token
+    };
 
-  transporter.sendMail(mailOptions, cb);
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) {
+        return reject(err);
+      } else {
+        return resolve();
+      }
+    });
+  }));
 };
 
 module.exports = {

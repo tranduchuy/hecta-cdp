@@ -17,6 +17,7 @@ const registerSchema = require('./validation-schemas/register.schema');
 const confirmEmailSchema = require('./validation-schemas/confirm-email.schema');
 const updateInfoSchema = require('./validation-schemas/update-info.schema');
 const resendConfirmEmailSchema = require('./validation-schemas/resend-confirm-email.schema');
+const forgetPasswordSchema = require('./validation-schemas/forget-password.schema');
 
 /**
  *
@@ -436,6 +437,47 @@ const resendConfirmRegister = async(req, res, next) => {
   }
 };
 
+/**
+ * Api forget password. Will lock user and send an email for resetting password
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const forgetPassword = async (req, res, next) => {
+  logger.info('UserController::forgetPassword::called');
+
+  try {
+    const errors = AJV(forgetPasswordSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const user = await UserService.findByEmailOrUsername(req.query.email, '___');
+    if (!user) {
+      logger.error(`UserController::forgetPassword::error. User not found, find by email: ${req.query.email}`);
+      return next(new Error('User not found'));
+    }
+
+    await UserService.blockUserForgetPassword(user);
+    await MailService.sendResetPassword(user.email, user.passwordReminderToken);
+    logger.info('UserController::forgetPassword::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
+  } catch (e) {
+    logger.error('UserController::forgetPassword::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -443,5 +485,6 @@ module.exports = {
   getInfoLoggedIn,
   updateInfo,
   checkDuplicateEmailOrUsername,
-  resendConfirmRegister
+  resendConfirmRegister,
+  forgetPassword
 };

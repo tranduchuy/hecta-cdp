@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const {sequelize} = require('../../services/db');
+const moment = require('moment');
 
 // constant files
 const UserConstant = require('./user.constant');
@@ -139,12 +140,29 @@ const isValidUpdateType = async (userId) => {
   }
 };
 
+/**
+ * Block a user when he/she forgot password, then create token to reset password
+ * @param {UserModel} user
+ * @returns {Promise<*>}
+ */
+const blockUserForgetPassword = async (user) => {
+  const reminderToken = RandomString.generate();
+  const reminderExpired = moment().add(2, 'hours');
+
+  user['status'] = StatusConstant.Blocked;
+  user['passwordReminderToken'] = reminderToken;
+  user['passwordReminderExpire'] = reminderExpired;
+
+  return await user.save();
+};
+
 module.exports = {
-  isValidHashPassword,
+  createBalanceInfo,
   createUser,
   findByEmailOrUsername,
-  generateToken,
-  createBalanceInfo,
   getBalanceInfo,
-  isValidUpdateType
+  generateToken,
+  isValidHashPassword,
+  isValidUpdateType,
+  blockUserForgetPassword
 };

@@ -7,6 +7,7 @@ router.get('/confirm-email', UserCtrl.confirmRegister);
 router.get('/resend-confirm-email', UserCtrl.resendConfirmRegister);
 router.get('/info', UserCtrl.getInfoLoggedIn);
 router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
+router.get('/forget-password', UserCtrl.forgetPassword);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);

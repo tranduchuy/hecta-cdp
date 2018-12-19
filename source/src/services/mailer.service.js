@@ -1,5 +1,8 @@
 const NodeMailer = require('nodemailer');
+const GlobalConstant = require('../constants/global.constant');
 const config = require('config');
+const log4js = require('log4js');
+const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
 
 const transporter = NodeMailer.createTransport({
   host: 'smtp.gmail.com',
@@ -31,9 +34,9 @@ const sendConfirmEmail = (email, token) => {
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.log(error);
+      logger.error('MailService::sendConfirmEmail::error', error);
     } else {
-      console.log('Email sent: ' + info.response);
+      logger.info(`MailService::sendConfirmEmail::success. Send mail to ${email} successfully`);
     }
   });
 };

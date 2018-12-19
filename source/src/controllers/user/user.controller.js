@@ -5,6 +5,7 @@ const log4js = require('log4js');
 const bcrypt = require('bcrypt');
 const logger = log4js.getLogger('Controllers');
 const AJV = require('../../core/ajv');
+const MailService = require('../../services/mailer.service');
 
 // constants
 const StatusConstant = require('../../constants/status.constant');
@@ -15,6 +16,7 @@ const loginSchema = require('./validation-schemas/login.schema');
 const registerSchema = require('./validation-schemas/register.schema');
 const confirmEmailSchema = require('./validation-schemas/confirm-email.schema');
 const updateInfoSchema = require('./validation-schemas/update-info.schema');
+const resendConfirmEmailSchema = require('./validation-schemas/resend-confirm-email.schema');
 
 /**
  *
@@ -116,6 +118,8 @@ const register = async (req, res, next) => {
 
     const newUser = await UserService.createUser(req.body);
     await UserService.createBalanceInfo(newUser.id);
+    // Send email
+    MailService.sendConfirmEmail(email, newUser.tokenEmailConfirm);
 
     logger.info(`UserController::register::success. Email: ${email}`);
     return res.json({
@@ -388,11 +392,56 @@ const checkDuplicateEmailOrUsername = async (req, res, next) => {
   }
 };
 
+/**
+ * Api resend email for confirm new user
+ * @param {object} req
+ * @param {object} res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const resendConfirmRegister = async(req, res, next) => {
+  logger.info('UserController::resendConfirmRegister::called');
+
+  try {
+    const errors = AJV(resendConfirmEmailSchema, req.query);
+    if (errors.length !== 0) {
+      logger.error('UserControllers::resendConfirmRegister::error. Wrong email');
+      return next(new Error('Wrong email'));
+    }
+
+    const {email} = req.query;
+    const user = UserService.findByEmailOrUsername(email, '___');
+    if (!user) {
+      logger.error(`UserController::resendConfirmRegister::error. User not found. Try to get user by email ${email}`);
+      return next(new Error('User not found'));
+    }
+
+    if (user.status !== StatusConstant.PendingOrWaitConfirm) {
+      logger.error('UserController::resendConfirmRegister::error. User have already been active');
+      return next(new Error('User have already been active'));
+    }
+
+    // Send email
+    MailService.sendConfirmEmail(email, user.tokenEmailConfirm);
+    logger.info('UserController::resendConfirmRegister::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
+  } catch (e) {
+    logger.error('UserController:;resendConfirmRegister::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
   getInfoLoggedIn,
   updateInfo,
-  checkDuplicateEmailOrUsername
+  checkDuplicateEmailOrUsername,
+  resendConfirmRegister
 };

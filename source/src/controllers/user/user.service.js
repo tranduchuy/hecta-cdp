@@ -4,7 +4,6 @@ const UserRelationShipModel = require('../../models/user-relationship.model');
 const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const bcrypt = require('bcrypt');
-const MailService = require('../../services/mailer.service');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const {sequelize} = require('../../services/db');
@@ -60,8 +59,6 @@ const createUser = async ({email, password, type, name, username, phone}) => {
     status: StatusConstant.PendingOrWaitConfirm
   });
 
-  // Send email
-  MailService.sendConfirmEmail(email, tokenEmailConfirm);
   return await newUser.save();
 };
 

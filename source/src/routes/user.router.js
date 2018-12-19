@@ -4,8 +4,9 @@ const UserCtrl = require('../controllers/user/user.controller');
 
 // GET
 router.get('/confirm-email', UserCtrl.confirmRegister);
+router.get('/resend-confirm-email', UserCtrl.resendConfirmRegister);
 router.get('/info', UserCtrl.getInfoLoggedIn);
-router.get('/check-email', UserCtrl.checkDuplicateEmailOrUsername);
+router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);

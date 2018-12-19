@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const {sequelize} = require('../../services/db');
 const moment = require('moment');
+const randomString = require('randomstring');
 
 // constant files
 const UserConstant = require('./user.constant');
@@ -150,10 +151,20 @@ const blockUserForgetPassword = async (user) => {
   const reminderExpired = moment().add(2, 'hours');
 
   user['status'] = StatusConstant.Blocked;
+  user['passwordHash'] = bcrypt.hashSync(randomString.generate(10), user['passwordSalt']);
   user['passwordReminderToken'] = reminderToken;
   user['passwordReminderExpire'] = reminderExpired;
 
   return await user.save();
+};
+
+/**
+ *
+ * @param {Date} expiredOn
+ * @returns {boolean}
+ */
+const isExpiredTokenResetPassword = (expiredOn) => {
+  return moment().isBefore(moment(expiredOn));
 };
 
 module.exports = {
@@ -164,5 +175,6 @@ module.exports = {
   generateToken,
   isValidHashPassword,
   isValidUpdateType,
-  blockUserForgetPassword
+  blockUserForgetPassword,
+  isExpiredTokenResetPassword
 };

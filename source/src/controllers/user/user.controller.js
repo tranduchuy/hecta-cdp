@@ -18,6 +18,7 @@ const confirmEmailSchema = require('./validation-schemas/confirm-email.schema');
 const updateInfoSchema = require('./validation-schemas/update-info.schema');
 const resendConfirmEmailSchema = require('./validation-schemas/resend-confirm-email.schema');
 const forgetPasswordSchema = require('./validation-schemas/forget-password.schema');
+const resetPasswordSchema = require('./validation-schemas/reset-password.schema');
 
 /**
  *
@@ -82,7 +83,6 @@ const login = async (req, res, next) => {
     logger.error('UserController::login::error', e);
     return next(e);
   }
-  bcrypt
 };
 
 /**
@@ -400,7 +400,7 @@ const checkDuplicateEmailOrUsername = async (req, res, next) => {
  * @param next
  * @returns {Promise<*>}
  */
-const resendConfirmRegister = async(req, res, next) => {
+const resendConfirmRegister = async (req, res, next) => {
   logger.info('UserController::resendConfirmRegister::called');
 
   try {
@@ -478,6 +478,64 @@ const forgetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const resetPassword = async (req, res, next) => {
+  logger.info('UserController::resetPassword::called');
+
+  try {
+    const errors = AJV(resetPasswordSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {
+          meta: {},
+          entries: []
+        }
+      });
+    }
+
+    const {token, password, confirmedPassword} = req.body;
+    if (password !== confirmedPassword) {
+      logger.error('UserController::register::error. 2 passwords not same');
+      return next(new Error('2 passwords not same'));
+    }
+
+    const user = await UserModel.findOne({
+      passwordReminderToken: token
+    });
+
+    if (!user) {
+      logger.warn('UserController::login::warn. User not found');
+      return next(new Error('User not found'));
+    }
+
+    if (UserService.isExpiredTokenResetPassword(user.passwordReminderExpire)) {
+      logger.error(`UserController::login::error. Time's up. Please try forget password again`);
+      return next(new Error(`Time's up. Please try forget form again`));
+    }
+
+    user.passwordHash = bcrypt.hashSync(password, user.passwordSalt);
+    await user.save();
+
+    logger.info('UserController::resetPassword::success');
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {meta: {}, entries: []}
+    })
+  } catch (e) {
+    logger.error('UserController::resetPassword::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -486,5 +544,6 @@ module.exports = {
   updateInfo,
   checkDuplicateEmailOrUsername,
   resendConfirmRegister,
-  forgetPassword
+  forgetPassword,
+  resetPassword
 };

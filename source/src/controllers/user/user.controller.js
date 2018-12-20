@@ -19,6 +19,7 @@ const updateInfoSchema = require('./validation-schemas/update-info.schema');
 const resendConfirmEmailSchema = require('./validation-schemas/resend-confirm-email.schema');
 const forgetPasswordSchema = require('./validation-schemas/forget-password.schema');
 const resetPasswordSchema = require('./validation-schemas/reset-password.schema');
+const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-email.schema');
 
 /**
  *
@@ -543,6 +544,53 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+const findDetailByEmail = async (req, res, next) => {
+  logger.info('UserController::findDetailByEmail::called');
+  try {
+    const errors = AJV(findDetailByEmailSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    logger.info(`UserController::findDetailByEmail::called with email ${req.query.email}`);
+    const user = await UserModel.findOne({
+      where: {
+        email: req.query.email,
+        status: StatusConstant.Active
+      }
+    });
+
+    if (!user) {
+      logger.error(`UserController::findDetailByEmail::error. User not found. Email: ${req.query.email}`);
+      return next(new Error('User not found'));
+    }
+
+    logger.info('UserController::findDetailByEmail::success');
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          email: user.email,
+          name: user.name | '',
+          username: user.username,
+          phone: user.phone,
+          address: user.address,
+          gender: user.gender
+        }]
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::findDetailByEmail::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -552,5 +600,6 @@ module.exports = {
   checkDuplicateEmailOrUsername,
   resendConfirmRegister,
   forgetPassword,
-  resetPassword
+  resetPassword,
+  findDetailByEmail
 };

@@ -457,7 +457,13 @@ const forgetPassword = async (req, res, next) => {
       });
     }
 
-    const user = await UserService.findByEmailOrUsername(req.query.email, '___');
+    const user = await UserModel.findOne({
+      where: {
+        email: req.query.email,
+        status: StatusConstant.Active
+      }
+    });
+
     if (!user) {
       logger.error(`UserController::forgetPassword::error. User not found, find by email: ${req.query.email}`);
       return next(new Error('User not found'));
@@ -522,6 +528,7 @@ const resetPassword = async (req, res, next) => {
     }
 
     user.passwordHash = bcrypt.hashSync(password, user.passwordSalt);
+    user.passwordReminderToken = '';
     await user.save();
 
     logger.info('UserController::resetPassword::success');

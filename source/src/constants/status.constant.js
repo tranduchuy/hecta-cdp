@@ -2,6 +2,7 @@ module.exports = {
   Active: 1,
   PendingOrWaitConfirm: 2,
   Blocked: 3,
+  BlockedByForgetPassword: 31,
   Delete: 4,
 
   PaymentPaid: 5,

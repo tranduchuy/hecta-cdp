@@ -150,7 +150,7 @@ const blockUserForgetPassword = async (user) => {
   const reminderToken = RandomString.generate();
   const reminderExpired = moment().add(2, 'hours');
 
-  user['status'] = StatusConstant.Blocked;
+  user['status'] = StatusConstant.BlockedByForgetPassword;
   user['passwordHash'] = bcrypt.hashSync(randomString.generate(10), user['passwordSalt']);
   user['passwordReminderToken'] = reminderToken;
   user['passwordReminderExpire'] = reminderExpired;

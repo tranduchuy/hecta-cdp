@@ -7,5 +7,9 @@ module.exports = {
     Middleware: 'Middleware',
     Model: 'Models',
     Util: 'Utils'
+  },
+  Pagination: {
+    DefaultLimit: 10,
+    DefaultPage: 1
   }
 };

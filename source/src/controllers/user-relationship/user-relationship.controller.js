@@ -3,6 +3,7 @@ const HttpCodeConstant = require('../../constants/http-code.constant');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const URService = require('./user-relationship.service');
+const RequestService = require('../../services/request.service');
 const AJV = require('../../core/ajv');
 const ctrlNm = 'UserRelationshipController';
 
@@ -14,13 +15,40 @@ const UserModel = require('../../models/user.model');
 
 // schemas
 const addRegisteredChildSchema = require('./validation-schemas/add-registered-child.schema');
+const getListChildrenSchema = require('./validation-schemas/list-children.schema');
 
 const listChildren = async (req, res, next) => {
-  logger.info('UserRelationShip::listChildren::called');
+  logger.info(`${ctrlNm}::listChildren::called`);
   try {
-    // TODO: get list children
-  } catch (e) {
+    const errors = AJV(getListChildrenSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
 
+    const paginationOptions = RequestService.extractPaginationCondition(req);
+    const optionQuery = Object.assign({}, paginationOptions, URService.mapQueryToValidObjectSort(req.query));
+    const result = await URService.getListChildren(req.user.id, optionQuery);
+    logger.info(`${ctrlNm}::listChildren::success`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {
+          totalRecords: result.count,
+          limit: optionQuery.limit,
+          currentPage: optionQuery.page
+        },
+        entries: result.rows
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::listChildren::error`, e);
+    return next(e);
   }
 };
 

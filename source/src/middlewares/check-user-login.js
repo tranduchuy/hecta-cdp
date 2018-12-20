@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const GlobalConstant = require('../constants/global.constant');
 const StatusConstant = require('../constants/status.constant');
 const HttpCodeConstant = require('../constants/http-code.constant');
+/**
+ * @type UserModel
+ */
 const UserModel = require('../models/user.model');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.App);
@@ -32,9 +35,6 @@ module.exports = async (req, res, next) => {
 
   try {
     let userInfo = jwt.verify(token, config.get('jwt').secret);
-    console.log(userInfo);
-    // userInfo = JSON.parse(userInfo);
-
     const user = await UserModel.findOne({
       where: {
         email: userInfo.email

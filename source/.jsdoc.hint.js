@@ -5,5 +5,6 @@
  * @property {Function} findAll
  * @property {Function} findById
  * @property {Function} update
+ * @property {Function} build
  *
  * */

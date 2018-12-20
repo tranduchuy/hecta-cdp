@@ -1,3 +1,18 @@
+/**
+ * @typedef {Object} UserRelationshipCols
+ * @property {number} id
+ * @property {number} parentId
+ * @property {number} childId
+ * @property {date} createdAt
+ * @property {date} updatedAt
+ * @property {number} credit
+ * @property {number} status
+ * @property {number} usedCredit
+ *
+ * @typedef {Model & UserRelationShip} UserRelationShipModel
+ */
+
+const StatusConstant = require('../constants/status.constant');
 const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
@@ -27,15 +42,18 @@ const userRelationShipSchema = {
   },
   credit: {
     type: Sequelize.DataTypes.BIGINT,
-    field: 'CREDIT'
+    field: 'CREDIT',
+    defaultValue: 0
   },
   status: {
     type: Sequelize.DataTypes.INTEGER,
-    field: 'STATUS'
+    field: 'STATUS',
+    defaultValue: StatusConstant.ChildWaiting
   },
   usedCredit: {
     type: Sequelize.DataTypes.BIGINT,
-    field: 'USED_CREDIT'
+    field: 'USED_CREDIT',
+    defaultValue: 0
   },
   createdAt: {
     type: Sequelize.DataTypes.DATE,

@@ -1,3 +1,32 @@
+/**
+ *  @typedef {Object} UserCols
+ *  @property {number} id
+ *  @property {string} email
+ *  @property {string} username
+ *  @property {string} name
+ *  @property {date} createdAt
+ *  @property {date} updatedAt
+ *  @property {string} passwordHash
+ *  @property {string} passwordSalt
+ *  @property {string} tokenEmailConfirm
+ *  @property {string} passwordReminderToken
+ *  @property {date} passwordReminderExpire
+ *  @property {string} address
+ *  @property {string} phone
+ *  @property {number} gender
+ *  @property {number} age
+ *  @property {number} role
+ *  @property {number} city
+ *  @property {number} district
+ *  @property {string} avatar
+ *  @property {date} birthday
+ *  @property {number} status
+ *  @property {number} type
+ *
+ *
+ * @typedef {Model & UserCols} UserModel
+ */
+
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 const UserTypeConstant = require('../constants/user-type.constant');

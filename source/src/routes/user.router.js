@@ -9,6 +9,7 @@ router.get('/info', UserCtrl.getInfoLoggedIn);
 router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
 router.get('/forget-password', UserCtrl.forgetPassword);
 router.get('/find-detail', UserCtrl.findDetailByEmail);
+router.get('/highlight', UserCtrl.getHighlightUser);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);

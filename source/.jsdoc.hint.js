@@ -6,6 +6,4 @@
  * @property {Function} findById
  * @property {Function} update
  *
- * USER MODEL
- * @typedef {Object & Model} UserModel
  * */

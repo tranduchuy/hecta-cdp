@@ -3,5 +3,6 @@ module.exports = [
   // user
   '/user/login',
   '/user/register',
-  '/user/confirm-email'
+  '/user/confirm-email',
+  '/user/highlight'
 ];

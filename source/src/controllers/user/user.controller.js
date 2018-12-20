@@ -1,4 +1,7 @@
 const UserService = require('./user.service');
+/**
+ * @type {UserModel}
+ */
 const UserModel = require('../../models/user.model');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const log4js = require('log4js');
@@ -6,6 +9,7 @@ const bcrypt = require('bcrypt');
 const logger = log4js.getLogger('Controllers');
 const AJV = require('../../core/ajv');
 const MailService = require('../../services/mailer.service');
+const Sequelize = require('sequelize');
 
 // constants
 const StatusConstant = require('../../constants/status.constant');
@@ -591,6 +595,57 @@ const findDetailByEmail = async (req, res, next) => {
   }
 };
 
+/**
+ * Get highlight list user
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {Promise<*>}
+ */
+const getHighlightUser = async (req, res, next) => {
+  logger.info('UserController::getHighlightUser::called');
+
+  try {
+    const users = await UserModel.findAll({
+      where: {
+        avatar: {
+          [Sequelize.Op.notIn]: [null, '']
+        },
+        role: {
+          [Sequelize.Op.notIn]: [UserRoleConstant.Master, UserRoleConstant.Admin]
+        }
+      },
+      limit: 10
+    });
+    const resultUsers = users.map(u => {
+      return {
+        email: u.email,
+        username: u.username,
+        name: u.name,
+        avatar: u.avatar,
+        phone: u.phone,
+        gender: u.gender
+      }
+    });
+
+    logger.info(`UserController::getHighlightUser::success. Get ${resultUsers.len()} highlight user`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {
+          size: 10
+        },
+        entries: resultUsers
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getHighlightUser::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -601,5 +656,6 @@ module.exports = {
   resendConfirmRegister,
   forgetPassword,
   resetPassword,
-  findDetailByEmail
+  findDetailByEmail,
+  getHighlightUser
 };

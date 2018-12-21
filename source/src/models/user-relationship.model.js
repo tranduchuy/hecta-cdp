@@ -67,8 +67,21 @@ const userRelationShipSchema = {
   }
 };
 
-const UserRelationShip = sequelize.define('userRelationShip', userRelationShipSchema, {
+const UserRelationShip = sequelize.define('userRelationship', userRelationShipSchema, {
   freezeTableName: true,
   tableName: 'USER_RELATIONSHIP'
 });
+
 module.exports = UserRelationShip;
+
+UserRelationShip.belongsTo(UserModel, {
+  foreignKey: 'childId',
+  constraints: false,
+  as: 'childInfo'
+});
+
+UserRelationShip.belongsTo(UserModel, {
+  foreignKey: 'parentId',
+  constraints: false,
+  as: 'parentInfo'
+});

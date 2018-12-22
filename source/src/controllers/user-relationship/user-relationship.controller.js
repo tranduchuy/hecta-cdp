@@ -12,11 +12,23 @@ const ctrlNm = 'UserRelationshipController';
  * @type UserModel
  */
 const UserModel = require('../../models/user.model');
+/**
+ * @type UserRelationShipModel
+ */
+const URModel = require('../../models/user-relationship.model');
 
 // schemas
 const addRegisteredChildSchema = require('./validation-schemas/add-registered-child.schema');
 const getListChildrenSchema = require('./validation-schemas/list-children.schema');
+const replyRequestRelationSchema = require('./validation-schemas/reply-request.schema');
 
+/**
+ * Api get list children of logged in user
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function }next
+ * @return {Promise<*>}
+ */
 const listChildren = async (req, res, next) => {
   logger.info(`${ctrlNm}::listChildren::called`);
   try {
@@ -52,6 +64,13 @@ const listChildren = async (req, res, next) => {
   }
 };
 
+/**
+ * Api add an user to be own child
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {Promise<*>}
+ */
 const addRegisteredChild = async (req, res, next) => {
   logger.info(`${ctrlNm}::addRegisteredChild::called`);
 
@@ -108,7 +127,55 @@ const addRegisteredChild = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {Promise<*>}
+ */
+const replyRequest = async (req, res, next) => {
+  logger.info(`${ctrlNm}::replyRequest::called`);
+
+  try {
+    const errors = AJV(replyRequestRelationSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const {status, relationId} = req.body;
+    const relation = await URModel.findById(relationId);
+    if (!relation) {
+      logger.error(`${ctrlNm}::replyRequest::error. Not found by id: ${relationId}`);
+      return next(new Error('Not found'));
+    }
+
+    if (relation.childId !== req.user.id) {
+      logger.error(`${ctrlNm}::replyRequest::error. Permission denied`);
+      return next(new Error('Permission denied'));
+    }
+
+    relation.status = status;
+    await relation.save();
+    logger.info(`${ctrlNm}::replyRequest::success`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: [relation]}
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::replyRequest::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
-  listChildren
+  listChildren,
+  replyRequest
 };

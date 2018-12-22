@@ -7,6 +7,7 @@ router.get('/children', UserRelationShipCtrl.listChildren);
 
 // POST
 router.post('/add-registered-child', UserRelationShipCtrl.addRegisteredChild);
+router.post('/child-reply-request', UserRelationShipCtrl.replyRequest);
 
 // PUT
 

@@ -110,13 +110,13 @@ function mapQueryToValidObjectSort(options) {
 
 /**
  * Register new user as child of current logged in user
- * @param {string} email
- * @param {string} password
- * @param {string} name
- * @param {string} username
- * @param {string | null} phone
- * @param {string | null} address
- * @param {number | null} gender
+ * @param email
+ * @param password
+ * @param name
+ * @param username
+ * @param phone
+ * @param address
+ * @param gender
  * @return {Promise<this|Errors.ValidationError>}
  */
 const registerNewChild = async ({email, password, name, username, phone, address, gender}) => {

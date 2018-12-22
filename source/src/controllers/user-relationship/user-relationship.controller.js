@@ -209,12 +209,12 @@ const addNewChild = async (req, res, next) => {
     }
 
     const newUserData = {
-      email: email.toString(),
-      password: password.toString(),
-      name: name.toString(),
-      username: username.toString(),
-      phone: phone.toString() || null,
-      address: address.toString() || null,
+      email: email,
+      password: password,
+      name: name,
+      username: username,
+      phone: phone || null,
+      address: address || null,
       gender: gender || null
     };
 
@@ -226,7 +226,9 @@ const addNewChild = async (req, res, next) => {
     MailService.sendConfirmEmail(email, newChild.tokenEmailConfirm);
 
     // create relation
-    const newRelation = await URService.createNewRelation(req.user.id, newChild.id);
+    let newRelation = await URService.createNewRelation(req.user.id, newChild.id);
+    newRelation.status = StatusConstant.ChildAccepted;
+    await newRelation.save();
     logger.info(`${ctrlNm}::addRegisteredChild::success. User ${newChild.id} become to be child of user ${req.user.id}`);
 
     return res.json({

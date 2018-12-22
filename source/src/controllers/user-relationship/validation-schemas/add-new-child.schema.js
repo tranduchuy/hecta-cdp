@@ -1,4 +1,3 @@
-const UserTypeConstant = require('../../../constants/user-type.constant');
 const GenderConstant = require('../../../constants/gender.constant');
 
 module.exports = {
@@ -30,14 +29,10 @@ module.exports = {
       type: 'string',
       minLength: 3
     },
-    type: {
-      type: 'number',
-      enum: [UserTypeConstant.Company, UserTypeConstant.Personal]
-    },
     username: {
       type: 'string',
       minLength: 6
     }
   },
-  required: ['email', 'password', 'confirmedPassword', 'type', 'username', 'name']
+  required: ['email', 'password', 'confirmedPassword', 'username', 'name']
 };

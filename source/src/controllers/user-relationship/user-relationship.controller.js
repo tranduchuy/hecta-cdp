@@ -1,9 +1,13 @@
 const GlobalConstant = require('../../constants/global.constant');
 const HttpCodeConstant = require('../../constants/http-code.constant');
+const UserTypeConstant = require('../../constants/user-type.constant');
+const StatusConstant = require('../../constants/status.constant');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const URService = require('./user-relationship.service');
+const UserService = require('../../controllers/user/user.service');
 const RequestService = require('../../services/request.service');
+const MailService = require('../../services/mailer.service');
 const AJV = require('../../core/ajv');
 const ctrlNm = 'UserRelationshipController';
 
@@ -21,6 +25,7 @@ const URModel = require('../../models/user-relationship.model');
 const addRegisteredChildSchema = require('./validation-schemas/add-registered-child.schema');
 const getListChildrenSchema = require('./validation-schemas/list-children.schema');
 const replyRequestRelationSchema = require('./validation-schemas/reply-request.schema');
+const addNewChildSchema = require('./validation-schemas/add-new-child.schema');
 
 /**
  * Api get list children of logged in user
@@ -75,6 +80,11 @@ const addRegisteredChild = async (req, res, next) => {
   logger.info(`${ctrlNm}::addRegisteredChild::called`);
 
   try {
+    if (req.user.type !== UserTypeConstant.Company) {
+      logger.error(`${ctrlNm}::addRegisteredChild::error. Permission denied, user type is not permitted`);
+      return next(new Error('Permission denied, user type is not permitted'));
+    }
+
     const errors = AJV(addRegisteredChildSchema, req.body);
     if (errors.length !== 0) {
       return res.json({
@@ -174,8 +184,73 @@ const replyRequest = async (req, res, next) => {
   }
 };
 
+const addNewChild = async (req, res, next) => {
+  logger.info(`${ctrlNm}::addNewChild:: called`);
+
+  try {
+    if (req.user.type !== UserTypeConstant.Company) {
+      logger.error(`${ctrlNm}::addRegisteredChild::error. Permission denied, user type is not permitted`);
+      return next(new Error('Permission denied, user type is not permitted'));
+    }
+
+    const errors = AJV(addNewChildSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const {name, username, email, password, confirmedPassword, phone, gender, address} = req.body;
+    if (password !== confirmedPassword) {
+      logger.error(`${ctrlNm}::addNewChild::error. 2 password not same`);
+      return next(new Error('2 password not same'));
+    }
+
+    const newUserData = {
+      email: email.toString(),
+      password: password.toString(),
+      name: name.toString(),
+      username: username.toString(),
+      phone: phone.toString() || null,
+      address: address.toString() || null,
+      gender: gender || null
+    };
+
+    // create user, child should confirm email
+    const newChild = await URService.registerNewChild(newUserData);
+    // create user balance
+    await UserService.createBalanceInfo(newChild.id);
+    // Send email to confirm
+    MailService.sendConfirmEmail(email, newChild.tokenEmailConfirm);
+
+    // create relation
+    const newRelation = await URService.createNewRelation(req.user.id, newChild.id);
+    logger.info(`${ctrlNm}::addRegisteredChild::success. User ${newChild.id} become to be child of user ${req.user.id}`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          parentId: newRelation.parentId,
+          childId: newRelation.childId,
+          credit: newRelation.credit,
+          usedCredit: newRelation.usedCredit
+        }]
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::addNewChild::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
-  replyRequest
+  replyRequest,
+  addNewChild
 };

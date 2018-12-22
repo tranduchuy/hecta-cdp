@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1fad1a3c-d603-4d58-a51f-a7de315aeeab" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/reply-request.schema.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/src/constants/gender.constant.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/add-new-child.schema.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/src/controllers/user/validation-schemas/register.schema.js" beforeDir="false" afterPath="$PROJECT_DIR$/source/src/controllers/user/validation-schemas/register.schema.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/src/routes/user-relationship.router.js" beforeDir="false" afterPath="$PROJECT_DIR$/source/src/routes/user-relationship.router.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -34,7 +37,7 @@
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="gitignore" value="3" />
-          <entry key="js" value="134" />
+          <entry key="js" value="150" />
           <entry key="json" value="1" />
           <entry key="md" value="3" />
           <entry key="sql" value="1" />
@@ -45,7 +48,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="JSON" value="1" />
-          <entry key="JavaScript" value="134" />
+          <entry key="JavaScript" value="150" />
           <entry key="Markdown" value="2" />
           <entry key="PLAIN_TEXT" value="4" />
           <entry key="SQL" value="1" />
@@ -55,7 +58,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="js" value="25220" />
+          <entry key="js" value="27420" />
           <entry key="json" value="3" />
           <entry key="md" value="195" />
           <entry key="yaml" value="10" />
@@ -64,7 +67,7 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="JSON" value="3" />
-          <entry key="JavaScript" value="25220" />
+          <entry key="JavaScript" value="27420" />
           <entry key="Markdown" value="195" />
           <entry key="YAML" value="10" />
         </counts>
@@ -73,20 +76,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/source/src/routes/user-relationship.router.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="9" column="65" selection-start-line="9" selection-start-column="65" selection-end-line="9" selection-end-column="65" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="89">
-              <caret line="141" column="30" lean-forward="true" selection-start-line="141" selection-start-column="30" selection-end-line="141" selection-end-column="30" />
+            <state relative-caret-position="1193">
+              <caret line="243" column="7" selection-start-line="243" selection-start-column="7" selection-end-line="243" selection-end-column="7" />
               <folding>
                 <element signature="e#466#492#0" />
               </folding>
@@ -95,28 +89,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/source/src/models/user-relationship.model.js">
+        <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/add-new-child.schema.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="112">
-              <caret line="7" column="28" lean-forward="true" selection-start-line="7" selection-start-column="28" selection-end-line="7" selection-end-column="28" />
+            <state relative-caret-position="48">
+              <caret line="3" column="17" lean-forward="true" selection-start-line="3" selection-start-column="17" selection-end-line="3" selection-end-column="17" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/reply-request.schema.js">
+        <entry file="file://$PROJECT_DIR$/source/src/models/user-relationship.model.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="11" column="35" selection-start-line="11" selection-start-column="35" selection-end-line="11" selection-end-column="35" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/source/src/constants/status.constant.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="19" column="2" lean-forward="true" selection-start-line="19" selection-start-column="2" selection-end-line="19" selection-end-column="2" />
+            <state relative-caret-position="320">
+              <caret line="47" column="8" selection-start-line="47" selection-start-column="2" selection-end-line="47" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -124,12 +109,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="752">
-              <caret line="47" column="53" lean-forward="true" selection-start-line="47" selection-start-column="53" selection-end-line="47" selection-end-column="53" />
+            <state relative-caret-position="237">
+              <caret line="73" column="42" selection-start-line="73" selection-start-column="42" selection-end-line="73" selection-end-column="42" />
               <folding>
-                <element signature="n#!!block;n#createNewRelation#0" />
                 <element signature="n#!!doc;n#isExistRelation#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/source/src/constants/status.constant.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="192">
+              <caret line="12" column="14" selection-start-line="12" selection-start-column="2" selection-end-line="12" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -152,6 +145,7 @@
       <find>blockUserForgetPassword</find>
       <find>findOne</find>
       <find>enum</find>
+      <find>ChildWaiting</find>
     </findStrings>
     <dirStrings>
       <dir>D:\Work\Personal\bds\cdp\source\src\controllers\user\validation-schemas</dir>
@@ -183,21 +177,24 @@
         <option value="$PROJECT_DIR$/source/src/middlewares/user-white-list.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user/user.service.js" />
         <option value="$PROJECT_DIR$/source/src/models/user.model.js" />
-        <option value="$PROJECT_DIR$/source/src/routes/user.router.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user/user.controller.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.constant.js" />
         <option value="$PROJECT_DIR$/source/src/routes/index.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/add-registered-child.schema.js" />
         <option value="$PROJECT_DIR$/source/app.js" />
         <option value="$PROJECT_DIR$/source/src/models/user-relationship.model.js" />
-        <option value="$PROJECT_DIR$/source/src/constants/global.constant.js" />
         <option value="$PROJECT_DIR$/source/.jsdoc.hint.js" />
         <option value="$PROJECT_DIR$/source/src/services/request.service.js" />
-        <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js" />
         <option value="$PROJECT_DIR$/source/src/middlewares/check-user-login.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/list-children.schema.js" />
-        <option value="$PROJECT_DIR$/source/src/routes/user-relationship.router.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/reply-request.schema.js" />
+        <option value="$PROJECT_DIR$/source/src/routes/user.router.js" />
+        <option value="$PROJECT_DIR$/source/src/routes/user-relationship.router.js" />
+        <option value="$PROJECT_DIR$/source/src/constants/global.constant.js" />
+        <option value="$PROJECT_DIR$/source/src/constants/gender.constant.js" />
+        <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/add-new-child.schema.js" />
+        <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js" />
+        <option value="$PROJECT_DIR$/source/src/controllers/user/validation-schemas/register.schema.js" />
         <option value="$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js" />
       </list>
     </option>
@@ -282,6 +279,15 @@
               <item name="source" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="controllers" type="462c0819:PsiDirectoryNode" />
+              <item name="user" type="462c0819:PsiDirectoryNode" />
+              <item name="validation-schemas" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cdp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cdp" type="462c0819:PsiDirectoryNode" />
+              <item name="source" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="controllers" type="462c0819:PsiDirectoryNode" />
               <item name="user-relationship" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -292,13 +298,6 @@
               <item name="controllers" type="462c0819:PsiDirectoryNode" />
               <item name="user-relationship" type="462c0819:PsiDirectoryNode" />
               <item name="validation-schemas" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cdp" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cdp" type="462c0819:PsiDirectoryNode" />
-              <item name="source" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="middlewares" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="cdp" type="b2602c69:ProjectViewProjectNode" />
@@ -371,12 +370,12 @@
       <workItem from="1545118361822" duration="30159000" />
       <workItem from="1545259591708" duration="32035000" />
       <workItem from="1545364711438" duration="789000" />
-      <workItem from="1545436873259" duration="4575000" />
+      <workItem from="1545436873259" duration="7447000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="105363000" />
+    <option name="totallyTimeSpent" value="108235000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -391,7 +390,7 @@
     <frame x="1912" y="-8" width="1936" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19669509" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19669509" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Messages" order="0" />
@@ -408,28 +407,8 @@
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info active="true" anchor="right" id="Terminal" order="3" visible="true" weight="0.3523454" />
+      <window_info anchor="right" id="Terminal" order="3" visible="true" weight="0.3523454" />
     </layout>
-    <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19960344" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Messages" order="0" />
-      <window_info anchor="bottom" id="Message" order="1" />
-      <window_info anchor="bottom" id="Find" order="2" />
-      <window_info anchor="bottom" id="Run" order="3" />
-      <window_info anchor="bottom" id="Debug" order="4" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="5" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="7" />
-      <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.3986014" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.2895105" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -442,28 +421,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Api confirm by email" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/documents/api/user/register.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/services/db.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="177">
-          <caret line="19" column="21" lean-forward="true" selection-start-line="19" selection-start-column="21" selection-end-line="19" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/node_modules/sequelize/lib/sequelize.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="984" column="2" selection-start-line="984" selection-start-column="2" selection-end-line="984" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/source/node_modules/sequelize/lib/deferrable.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
@@ -501,13 +458,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/source/config/production.yaml">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/models/balance.model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="37" column="20" selection-start-line="37" selection-start-column="20" selection-end-line="37" selection-end-column="20" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/source/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
@@ -569,24 +519,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/user.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="156" lean-forward="true" selection-start-line="156" selection-end-line="156" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.constant.js">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret column="20" lean-forward="true" selection-start-column="20" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/routes/user.router.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="35" selection-end-line="21" selection-end-column="24" />
         </state>
       </provider>
     </entry>
@@ -614,24 +550,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/user.controller.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="5" selection-start-line="5" selection-end-line="5" selection-end-column="71" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/source/src/models/user.model.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="64">
           <caret line="10" column="40" lean-forward="true" selection-start-line="10" selection-start-column="40" selection-end-line="10" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/constants/global.constant.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
         </state>
       </provider>
     </entry>
@@ -691,13 +613,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/validation-schemas/register.schema.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="18" column="18" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/source/src/controllers/user/validation-schemas/resend-confirm-email.schema.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
@@ -740,41 +655,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="752">
-          <caret line="47" column="53" lean-forward="true" selection-start-line="47" selection-start-column="53" selection-end-line="47" selection-end-column="53" />
-          <folding>
-            <element signature="n#!!block;n#createNewRelation#0" />
-            <element signature="n#!!doc;n#isExistRelation#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/models/user-relationship.model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="7" column="28" lean-forward="true" selection-start-line="7" selection-start-column="28" selection-end-line="7" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/routes/user-relationship.router.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="9" column="65" selection-start-line="9" selection-start-column="65" selection-end-line="9" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="89">
-          <caret line="141" column="30" lean-forward="true" selection-start-line="141" selection-start-column="30" selection-end-line="141" selection-end-column="30" />
-          <folding>
-            <element signature="e#466#492#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/reply-request.schema.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
@@ -782,10 +662,248 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/source/src/constants/status.constant.js">
+    <entry file="file://$PROJECT_DIR$/source/src/models/balance.model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="265">
+          <caret line="31" column="14" lean-forward="true" selection-start-line="31" selection-start-column="14" selection-end-line="31" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/routes/user.router.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="304">
-          <caret line="19" column="2" lean-forward="true" selection-start-line="19" selection-start-column="2" selection-end-line="19" selection-end-column="2" />
+          <caret line="19" column="55" lean-forward="true" selection-start-line="19" selection-start-column="55" selection-end-line="19" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/constants/global.constant.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/constants/gender.constant.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="2" lean-forward="true" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/user.constant.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="24" lean-forward="true" selection-start-line="3" selection-start-column="24" selection-end-line="3" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/user.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="205">
+          <caret line="91" lean-forward="true" selection-start-line="91" selection-end-line="91" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/routes/user-relationship.router.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="4" column="6" lean-forward="true" selection-start-line="4" selection-start-column="6" selection-end-line="4" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/user.controller.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="137">
+          <caret line="100" column="47" lean-forward="true" selection-start-line="100" selection-start-column="47" selection-end-line="100" selection-end-column="47" />
+          <folding>
+            <element signature="e#47#75#0" />
+            <element signature="e#1284#1388#0" />
+            <element signature="e#1429#3105#0" />
+            <element signature="e#1486#3014#0" />
+            <element signature="e#1564#1688#0" />
+            <element signature="e#1588#1680#0" />
+            <element signature="e#1830#1951#0" />
+            <element signature="e#2024#2203#0" />
+            <element signature="e#2252#2408#0" />
+            <element signature="e#2439#2659#0" />
+            <element signature="e#2826#3008#0" />
+            <element signature="e#2914#3002#0" />
+            <element signature="e#2930#2957#0" />
+            <element signature="e#3025#3103#0" />
+            <element signature="e#3108#3186#0" />
+            <element signature="e#3368#3492#0" />
+            <element signature="e#3392#3484#0" />
+            <element signature="e#3616#3754#0" />
+            <element signature="e#3865#3993#0" />
+            <element signature="e#4286#4452#0" />
+            <element signature="e#4369#4446#0" />
+            <element signature="e#4469#4547#0" />
+            <element signature="e#4552#4702#0" />
+            <element signature="e#4753#5861#0" />
+            <element signature="e#4761#5760#0" />
+            <element signature="e#4990#5120#0" />
+            <element signature="e#5014#5112#0" />
+            <element signature="e#5163#5226#0" />
+            <element signature="e#5178#5220#0" />
+            <element signature="e#5245#5383#0" />
+            <element signature="e#5407#5479#0" />
+            <element signature="e#5618#5754#0" />
+            <element signature="e#5701#5748#0" />
+            <element signature="e#5771#5859#0" />
+            <element signature="e#5864#5977#0" />
+            <element signature="e#6028#6629#0" />
+            <element signature="e#6095#6528#0" />
+            <element signature="e#6126#6347#0" />
+            <element signature="e#6370#6522#0" />
+            <element signature="e#6453#6516#0" />
+            <element signature="e#6539#6627#0" />
+            <element signature="e#6632#6730#0" />
+            <element signature="e#6776#9483#0" />
+            <element signature="e#6864#9387#0" />
+            <element signature="e#6947#7092#0" />
+            <element signature="e#6971#7084#0" />
+            <element signature="e#7439#7573#0" />
+            <element signature="e#7649#7796#0" />
+            <element signature="e#7812#8187#0" />
+            <element signature="e#7909#8181#0" />
+            <element signature="e#8014#8171#0" />
+            <element signature="e#8102#8161#0" />
+            <element signature="e#8207#8451#0" />
+            <element signature="e#8251#8317#0" />
+            <element signature="e#8382#8445#0" />
+            <element signature="e#8478#8860#0" />
+            <element signature="e#8982#9381#0" />
+            <element signature="e#9065#9375#0" />
+            <element signature="e#9102#9367#0" />
+            <element signature="e#9103#9366#0" />
+            <element signature="e#9398#9481#0" />
+            <element signature="e#9486#9598#0" />
+            <element signature="e#9663#11315#0" />
+            <element signature="e#9744#11200#0" />
+            <element signature="e#9806#10421#0" />
+            <element signature="e#9901#10156#0" />
+            <element signature="e#9927#10147#0" />
+            <element signature="e#10033#10137#0" />
+            <element signature="e#10053#10100#0" />
+            <element signature="e#10162#10415#0" />
+            <element signature="e#10188#10405#0" />
+            <element signature="e#10290#10395#0" />
+            <element signature="e#10310#10358#0" />
+            <element signature="e#10438#11045#0" />
+            <element signature="e#10530#10783#0" />
+            <element signature="e#10556#10773#0" />
+            <element signature="e#10659#10763#0" />
+            <element signature="e#10679#10726#0" />
+            <element signature="e#10789#11039#0" />
+            <element signature="e#10815#11029#0" />
+            <element signature="e#10914#11019#0" />
+            <element signature="e#10934#10982#0" />
+            <element signature="e#11211#11313#0" />
+            <element signature="e#11318#11452#0" />
+            <element signature="e#11509#12726#0" />
+            <element signature="e#11582#12619#0" />
+            <element signature="e#11674#11808#0" />
+            <element signature="e#11922#12096#0" />
+            <element signature="e#12159#12328#0" />
+            <element signature="e#12501#12613#0" />
+            <element signature="e#12630#12724#0" />
+            <element signature="e#12729#12884#0" />
+            <element signature="e#12934#13997#0" />
+            <element signature="e#13000#13897#0" />
+            <element signature="e#13088#13233#0" />
+            <element signature="e#13112#13225#0" />
+            <element signature="e#13276#13376#0" />
+            <element signature="e#13291#13370#0" />
+            <element signature="e#13395#13562#0" />
+            <element signature="e#13779#13891#0" />
+            <element signature="e#13908#13995#0" />
+            <element signature="e#14000#14078#0" />
+            <element signature="e#14127#15593#0" />
+            <element signature="e#14192#15494#0" />
+            <element signature="e#14278#14453#0" />
+            <element signature="e#14302#14445#0" />
+            <element signature="e#14384#14437#0" />
+            <element signature="e#14554#14692#0" />
+            <element signature="e#14735#14777#0" />
+            <element signature="e#14796#14917#0" />
+            <element signature="e#14997#15174#0" />
+            <element signature="e#15386#15489#0" />
+            <element signature="e#15505#15591#0" />
+            <element signature="e#15648#16897#0" />
+            <element signature="e#15716#16794#0" />
+            <element signature="e#15807#15952#0" />
+            <element signature="e#15831#15944#0" />
+            <element signature="e#16087#16187#0" />
+            <element signature="e#16102#16181#0" />
+            <element signature="e#16206#16368#0" />
+            <element signature="e#16453#16788#0" />
+            <element signature="e#16536#16782#0" />
+            <element signature="e#16573#16774#0" />
+            <element signature="e#16574#16773#0" />
+            <element signature="e#16805#16895#0" />
+            <element signature="e#16900#17030#0" />
+            <element signature="e#17082#18053#0" />
+            <element signature="e#17150#17951#0" />
+            <element signature="e#17194#17421#0" />
+            <element signature="e#17209#17398#0" />
+            <element signature="e#17227#17281#0" />
+            <element signature="e#17297#17390#0" />
+            <element signature="e#17463#17644#0" />
+            <element signature="e#17478#17638#0" />
+            <element signature="e#17772#17945#0" />
+            <element signature="e#17855#17939#0" />
+            <element signature="e#17871#17901#0" />
+            <element signature="e#17962#18051#0" />
+            <element signature="e#18073#18282#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user/validation-schemas/register.schema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="3" column="18" lean-forward="true" selection-start-line="3" selection-start-column="18" selection-end-line="3" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/constants/status.constant.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="12" column="14" selection-start-line="12" selection-start-column="2" selection-end-line="12" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="237">
+          <caret line="73" column="42" selection-start-line="73" selection-start-column="42" selection-end-line="73" selection-end-column="42" />
+          <folding>
+            <element signature="n#!!doc;n#isExistRelation#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/models/user-relationship.model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="47" column="8" selection-start-line="47" selection-start-column="2" selection-end-line="47" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/validation-schemas/add-new-child.schema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="17" lean-forward="true" selection-start-line="3" selection-start-column="17" selection-end-line="3" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/source/src/controllers/user-relationship/user-relationship.controller.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1193">
+          <caret line="243" column="7" selection-start-line="243" selection-start-column="7" selection-end-line="243" selection-end-column="7" />
+          <folding>
+            <element signature="e#466#492#0" />
+          </folding>
         </state>
       </provider>
     </entry>

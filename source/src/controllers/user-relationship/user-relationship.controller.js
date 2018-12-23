@@ -26,6 +26,7 @@ const addRegisteredChildSchema = require('./validation-schemas/add-registered-ch
 const getListChildrenSchema = require('./validation-schemas/list-children.schema');
 const replyRequestRelationSchema = require('./validation-schemas/reply-request.schema');
 const addNewChildSchema = require('./validation-schemas/add-new-child.schema');
+const childDetailSchema = require('./validation-schemas/child-detail.schema');
 
 /**
  * Api get list children of logged in user
@@ -250,9 +251,62 @@ const addNewChild = async (req, res, next) => {
   }
 };
 
+const getDetailChild = async (req, res, next) => {
+  logger.info(`${ctrlNm}::getDetailChild::called`);
+
+  try {
+    const errors = AJV(childDetailSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const child = await UserModel.findById(req.query.childId);
+    if (!child) {
+      logger.error(`${ctrlNm}::getDetailChild::error. Child not found`);
+      return next(new Error('Child not found'));
+    }
+
+    const relation = await URModel.findOne({
+      parentId: req.user.id,
+      childId: req.query.childId,
+      status: StatusConstant.ChildAccepted
+    });
+
+    if (!relation) {
+      logger.error(`${ctrlNm}::getDetailChild::error. Permission denied`);
+      return next(new Error('Permission denied'));
+    }
+
+    logger.info(`${ctrlNm}::getDetailChild::success. Get child info success. Child id ${req.query.childId}`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          id: child.id,
+          username: child.username,
+          email: child.email,
+          name: child.name,
+          phone: child.phone
+        }]
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::getDetailChild::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
   replyRequest,
-  addNewChild
+  addNewChild,
+  getDetailChild
 };

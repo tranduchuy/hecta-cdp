@@ -3,11 +3,11 @@ module.exports = {
   properties: {
     page: {
       type: 'string',
-      pattern: '\d*'
+      pattern: '\\d*'
     },
     limit: {
       type: 'string',
-      pattern: '\d*',
+      pattern: '\\d*',
       maxLength: 3 // 999
     },
     sortBy: {

@@ -10,7 +10,7 @@ module.exports = {
     },
     phone: {
       type: 'string',
-      pattern: '\d+',
+      pattern: '\\d+',
       minLength: 10,
       maxLength: 11
     },

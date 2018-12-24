@@ -6,7 +6,7 @@ const TransHisService = require('./transaction-history.service');
 const RequestService = require('../../services/request.service');
 const AJV = require('../../core/ajv');
 const ctrlNm = 'TransactionHistoryController';
-const transType = require('../../constants/transaction-type.constant');
+const userRole = require('../../constants/user-role.constant');
 
 // models
 /**
@@ -28,9 +28,34 @@ const listMyTransactionHistory = async (req, res, next) => {
                 data: {meta: {}, entries: []}
             });
         }
-
+    
+        if (req.user.role != userRole.EndUser) {
+            return res.json({
+                status: HttpCodeConstant.Error,
+                messages: ['User Is Not Role'],
+                data: {meta: {}, entries: []}
+            });
+        }
+        
         const paginationOptions = RequestService.extractPaginationCondition(req);
-        const optionQuery = Object.assign({}, paginationOptions, TransHisService.mapQueryToValidObjectSort(req.query));
+        const optionQuery = TransHisService.extractSearchCondition(req);
+        const result = await TransHisService.getListMyTransactionHistory(optionQuery,paginationOptions);
+    
+        logger.info(`${ctrlNm}::listMyTransactionHistory::success`);
+    
+        return res.json({
+            status: HttpCodeConstant.Success,
+            messages: ['Success'],
+            data: {
+                meta: {
+                    totalRecords: result.count,
+                    limit: optionQuery.limit,
+                    currentPage: optionQuery.page
+                },
+                entries: result.rows
+            }
+        });
+        
     } catch (e) {
         logger.error(`${ctrlNm}::listMyTransactionHistory::error`, e);
         return next(e);

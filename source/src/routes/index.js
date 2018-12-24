@@ -5,6 +5,6 @@ const checkLoginMiddleware = require('../middlewares/check-user-login');
 router.use(checkLoginMiddleware);
 router.use('/user', require('./user.router'));
 router.use('/user-relationship', require('./user-relationship.router'));
-router.use('/transaction-history', require('transaction-history.router'));
+router.use('/transaction-history', require('./transaction-history.router'));
 
 module.exports = router;

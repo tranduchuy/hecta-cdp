@@ -1,4 +1,4 @@
-const UserModel = require('user.model');
+const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
@@ -100,3 +100,10 @@ const Transaction = sequelize.define('transaction', transactionSchema, {
   tableName: 'USER'
 });
 module.exports = Transaction;
+
+Transaction.belongsTo(UserModel, {
+  foreignKey: 'fromUserId',
+    constraints: false,
+    as: 'fromUserInfo'
+});
+    

@@ -1,4 +1,5 @@
 const transType = require('../../../constants/transaction-type.constant');
+const TransConstant = require('../transaction-history.constant');
 module.exports = {
     type: 'object',
     properties: {
@@ -8,11 +9,11 @@ module.exports = {
         },
         startDay: {
             type: 'string', //yyyy-mm-dd
-            pattern: '\d{4}-\d{2}-\d{2}',
+            pattern: TransConstant.patternDate,
         },
         endDay: {
             type: 'string', //yyyy-mm-dd
-            pattern: '\d{4}-\d{2}-\d{2}',
+            pattern: TransConstant.patternDate,
         },
         type: {
             type: 'string',

@@ -27,6 +27,7 @@ const getListChildrenSchema = require('./validation-schemas/list-children.schema
 const replyRequestRelationSchema = require('./validation-schemas/reply-request.schema');
 const addNewChildSchema = require('./validation-schemas/add-new-child.schema');
 const childDetailSchema = require('./validation-schemas/child-detail.schema');
+const listRequestSchema = require('./validation-schemas/list-request.schema');
 
 /**
  * Api get list children of logged in user
@@ -303,10 +304,50 @@ const getDetailChild = async (req, res, next) => {
   }
 };
 
+const listRequest = async (req, res, next) => {
+  logger.info(`${ctrlNm}::listRequest::called`);
+
+  try {
+    const errors = AJV(listRequestSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    if (req.user.type === UserTypeConstant.Company) {
+      logger.error(`${ctrlNm}::listRequest::error. Must be a personal account`);
+      return next(new Error('You must be a personal account'));
+    }
+
+    const relations = await URModel.findAll({
+      where: {
+        childId: req.user.id
+      }
+    });
+    logger.info(`${ctrlNm}::listRequest::success`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: relations
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::listRequest::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
   replyRequest,
   addNewChild,
-  getDetailChild
+  getDetailChild,
+  listRequest
 };

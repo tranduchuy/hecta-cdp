@@ -143,11 +143,16 @@ const registerNewChild = async ({email, password, name, username, phone, address
   return await newUser.save();
 };
 
+const getListRequest = async (req, res, next) => {
+
+};
+
 module.exports = {
   isValidToBeChild,
   isExistRelation,
   createNewRelation,
   getListChildren,
   mapQueryToValidObjectSort,
-  registerNewChild
+  registerNewChild,
+  getListRequest
 };

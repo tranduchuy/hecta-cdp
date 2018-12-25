@@ -77,7 +77,7 @@ module.exports = UserRelationShip;
 UserRelationShip.belongsTo(UserModel, {
   foreignKey: 'childId',
   constraints: false,
-  as: 'childInfo'
+  as: 'childInfo' // name
 });
 
 UserRelationShip.belongsTo(UserModel, {

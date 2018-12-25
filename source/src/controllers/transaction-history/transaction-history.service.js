@@ -10,6 +10,7 @@ const moment = require('moment');
  */
 const TransactionModel = require('../../models/transaction.model');
 const UserModel = require('../../models/user.model');
+const UserRelationShipModel = require('../../models/user-relationship.model');
 
 /**
  *
@@ -21,6 +22,11 @@ const extractSearchCondition = function (req, childId) {
     const cond = {
         userId: childId || req.user.id
     };
+    
+    if (childId)
+    {
+    
+    }
     
     const {startDay, endDay, type} = req.query;
     
@@ -44,16 +50,16 @@ const extractSearchCondition = function (req, childId) {
 };
 
 /**
- *Get list My Transaction History with
+ *Get list Transaction History Of User with
  * @param userId
  * @param options
  * @returns {Promise<{count: Integer, rows: Model[]}>}
  */
-const getListMyTransactionHistory = async  (optionQuery, paginationOptions) => {
+const getListTransactionHistory = async  (optionQuery, paginationOptions) => {
     return await TransactionModel.findAndCountAll({
-        where: {
+        where:
             optionQuery
-        },
+        ,
         include: [
             {
                 model: UserModel,
@@ -72,7 +78,20 @@ const getListMyTransactionHistory = async  (optionQuery, paginationOptions) => {
     });
 };
 
+
+const checkUserRelationShip = async  (parentId, childId) => {
+    return await UserRelationShipModel.findAndCountAll({
+        where:
+            {
+                parentId: parentId,
+                childId: childId,
+                status: StatusConstant.ChildAccepted
+            }
+    });
+};
+
 module.exports = {
     extractSearchCondition,
-    getListMyTransactionHistory,
+    getListTransactionHistory,
+    checkUserRelationShip,
 };

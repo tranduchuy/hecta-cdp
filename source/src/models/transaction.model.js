@@ -97,7 +97,7 @@ const transactionSchema = {
 
 const Transaction = sequelize.define('transaction', transactionSchema, {
   freezeTableName: true,
-  tableName: 'USER'
+  tableName: 'TRANSACTION'
 });
 module.exports = Transaction;
 

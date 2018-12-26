@@ -3,6 +3,10 @@ const UserService = require('./user.service');
  * @type {UserModel}
  */
 const UserModel = require('../../models/user.model');
+/**
+ * @type Model
+ */
+const URModel = require('../../models/user-relationship.model');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const log4js = require('log4js');
 const bcrypt = require('bcrypt');
@@ -14,6 +18,7 @@ const Sequelize = require('sequelize');
 // constants
 const StatusConstant = require('../../constants/status.constant');
 const UserRoleConstant = require('../../constants/user-role.constant');
+const UserTypeConstant = require('../../constants/user-type.constant');
 
 // validate schema
 const loginSchema = require('./validation-schemas/login.schema');
@@ -24,6 +29,7 @@ const resendConfirmEmailSchema = require('./validation-schemas/resend-confirm-em
 const forgetPasswordSchema = require('./validation-schemas/forget-password.schema');
 const resetPasswordSchema = require('./validation-schemas/reset-password.schema');
 const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-email.schema');
+const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
 
 /**
  *
@@ -237,7 +243,6 @@ const getInfoLoggedIn = async (req, res, next) => {
  * @returns {Promise<*>}
  */
 const updateInfo = async (req, res, next) => {
-  // TODO: should be test
   logger.info('UserController::updateInfo::called');
 
   try {
@@ -646,6 +651,97 @@ const getHighlightUser = async (req, res, next) => {
   }
 };
 
+/**
+ * Share balance from parent account to child account. The amount will be subtracted from parent's MAIN_1 and added into child's CREDIT
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<*>}
+ */
+const shareBalanceToChild = async (req, res, next) => {
+  // TODO should include checking google authenticate
+  logger.info(`UserController::shareBalanceToChild::called`);
+
+  try {
+    const errors = AJV(shareBalanceSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    // Check type company for sharing
+    if (req.user.type !== UserTypeConstant.Company) {
+      logger.error(`UserController::shareBalanceToChild::error. Need account company(${UserTypeConstant.Company}). Current ${req.user.type}`);
+      return next(new Error('Must be a company'));
+    }
+
+    const {childId, amount} = req.body;
+    const parentBalanceInfo = await UserService.getBalanceInfo(req.user.id);
+
+    // Check how much main1
+    if (parentBalanceInfo.main1 < amount) {
+      logger.error(`UserController::shareBalance::error. MAIN_1 is not enough for share. Parent balance: `, JSON.stringify(parentBalanceInfo));
+      return next(new Error('Not enough money for share'));
+    }
+
+    const child = await UserModel.findById(childId);
+    if (!child) {
+      logger.error(`UserController::shareBalance::error. Child account not found. Find by id ${childId}`);
+      return next(new Error('Child account not found'));
+    }
+
+    // Check personal account for other parent can be shared credit
+    if (child.type !== UserTypeConstant.Personal) {
+      logger.error(`UserController::shareBalanceToChild::error. Need account is child(${UserTypeConstant.Personal}) for sharing credit. Current ${child.type}`);
+      return next(new Error(`You're not personal account`));
+    }
+
+    // Check relation between parent and child
+    const relation = URModel.findOne({
+      parentId: req.user.id,
+      childId: childId,
+      status: StatusConstant.ChildAccepted
+    });
+
+    if (!relation) {
+      logger.error(`UserController::shareBalanceToChild::error. Relation is not exist between ${req.user.id}, ${childId} with status ${StatusConstant.ChildAccepted}`);
+      return next(new Error('You and that account have no real relation ship'));
+    }
+
+    const childBalanceInfo = await UserService.getBalanceInfo(childId);
+    const afterParentBalance = await UserService.updateMain1(req.user.id, -amount);
+    logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update success for parent ${req.user.id}. From ${JSON.stringify(parentBalanceInfo)} to ${JSON.stringify(afterParentBalance)}`);
+
+    const afterChildBalance = await UserService.updateMain1(childId, amount);
+    logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update success for child ${childId}. From ${JSON.stringify(childBalanceInfo)} to ${JSON.stringify(afterParentBalance)}`);
+
+    const t1 = await UserService.addTransactionForParentShareCredit(req.user.id, childId, amount, parentBalanceInfo, afterParentBalance);
+    logger.info(`UserController::shareBalanceToChild::create transaction for parent success. `, t1);
+
+    const t2 = await UserService.addTransactionForChildReceiveCredit(req.user.id, childId, amount, childBalanceInfo, afterChildBalance);
+    logger.info(`UserController::shareBalanceToChild::create transaction for child success. `, t2);
+    logger.info(`UserController::shareBalanceToChild::success. From ${req.user.id} to ${childId} with amount ${amount}`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          parentBalance: afterParentBalance,
+          childBalance: afterChildBalance
+        }]
+      }
+    });
+  } catch (e) {
+    logger.error(`UserController::shareBalanceToChild::error`);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -657,5 +753,6 @@ module.exports = {
   forgetPassword,
   resetPassword,
   findDetailByEmail,
-  getHighlightUser
+  getHighlightUser,
+  shareBalanceToChild
 };

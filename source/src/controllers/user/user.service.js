@@ -1,20 +1,34 @@
+/**
+ * @type UserModel
+ */
 const UserModel = require('../../models/user.model');
+/**
+ * @type Model
+ */
 const BalanceModel = require('../../models/balance.model');
+/**
+ * @type Model
+ */
 const UserRelationShipModel = require('../../models/user-relationship.model');
+/**
+ * @type Model
+ */
+const TransactionModel = require('../../models/transaction.model');
 const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');
-const {sequelize} = require('../../services/db');
 const moment = require('moment');
 const randomString = require('randomstring');
 
 // constant files
 const UserConstant = require('./user.constant');
+const UserTypeConstant = require('../../constants/user-type.constant');
 const RandomString = require('randomstring');
 const StatusConstant = require('../../constants/status.constant');
 const GlobalConstant = require('../../constants/global.constant');
+const TransactionTypeConstant = require('../../constants/transaction-type.constant');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
 /**
  * Compare hash password with input plain text
@@ -95,14 +109,35 @@ const createBalanceInfo = async (userId) => {
   return await newBalance.save();
 };
 
+/**
+ * Get balance info of user. If user is personal account then get more info of credit and usedCredit
+ * @param userId
+ * @return {{main1, main2, promo, credit?, usedCredit?}}
+ */
 const getBalanceInfo = async (userId) => {
+  const user = await UserModel.findById(userId);
   const balance = await BalanceModel.findOne({userId});
-
-  return {
+  const result = {
     main1: balance.main1,
     main2: balance.main2,
     promo: balance.promo
   };
+
+  if (user.type === UserTypeConstant.Personal) {
+    result.credit = 0;
+    result.usedCredit = 0;
+    const relation = await UserRelationShipModel.findOne({
+      childId: userId,
+      status: StatusConstant.ChildAccepted
+    });
+
+    if (relation) {
+      result.credit = relation.credit;
+      result.usedCredit = relation.usedCredit;
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -167,6 +202,63 @@ const isExpiredTokenResetPassword = (expiredOn) => {
   return moment().isBefore(moment(expiredOn));
 };
 
+/**
+ * Update MAIN_1 money of userId
+ * @param {number} userId
+ * @param {number} amount
+ * @return {Promise<Promise<this|Errors.ValidationError>|*|void>}
+ */
+const updateMain1 = async (userId, amount) => {
+  const balance = await BalanceModel.findOne({
+    userId
+  });
+
+  balance.main1 = balance.main1 + amount;
+  return balance.save();
+};
+
+const addTransactionForParentShareCredit = async (parentId, childId, amount, before, after) => {
+  const newTransaction = TransactionModel.build({
+    userId: parentId,
+    fromUserId: childId,
+    amount,
+    type: TransactionTypeConstant.ShareCredit,
+    content: 'Parent share credit to child',
+    note: '',
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
+const addTransactionForChildReceiveCredit = async (parentId, childId, amount, before, after) => {
+  const newTransaction = TransactionModel.build({
+    userId: parentId,
+    fromUserId: childId,
+    amount,
+    type: TransactionTypeConstant.ReceiveCredit,
+    content: 'Child receive credit from parent',
+    note: '',
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
 module.exports = {
   createBalanceInfo,
   createUser,
@@ -176,5 +268,8 @@ module.exports = {
   isValidHashPassword,
   isValidUpdateType,
   blockUserForgetPassword,
-  isExpiredTokenResetPassword
+  isExpiredTokenResetPassword,
+  updateMain1,
+  addTransactionForParentShareCredit,
+  addTransactionForChildReceiveCredit
 };

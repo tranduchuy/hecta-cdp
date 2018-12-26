@@ -3,6 +3,10 @@ const TransConstant = require('../transaction-history.constant');
 module.exports = {
     type: 'object',
     properties: {
+        userId: {
+            type: 'string',
+            pattern: '\d*'
+        },
         page: {
             type: 'string',
             pattern: '\d*'

@@ -100,3 +100,10 @@ const Transaction = sequelize.define('transaction', transactionSchema, {
   tableName: 'TRANSACTION'
 });
 module.exports = Transaction;
+
+Transaction.belongsTo(UserModel, {
+  foreignKey: 'fromUserId',
+    constraints: false,
+    as: 'fromUserInfo'
+});
+    

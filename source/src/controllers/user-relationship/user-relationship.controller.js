@@ -106,6 +106,11 @@ const addRegisteredChild = async (req, res, next) => {
       return next('User not found');
     }
 
+    if (targetUser.type !== UserTypeConstant.Personal) {
+      logger.error(`${ctrlNm}::addRegisteredChild::error. Company can not be child of other company`);
+      return next(`Invalid child. That child is a company`);
+    }
+
     const isExistRelation = await URService.isExistRelation(req.user.id, userId);
     if (isExistRelation) {
       logger.error(`${ctrlNm}::addRegisteredChild::error. Duplicate relationship between user ${req.user.id} and user ${userId}`);

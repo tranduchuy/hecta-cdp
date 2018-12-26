@@ -18,5 +18,6 @@ router.put('/:id', UserCtrl.updateInfo);
 router.post('/login', UserCtrl.login);
 router.post('/register', UserCtrl.register);
 router.post('/reset-password', UserCtrl.resetPassword);
+router.post('/share-credit', UserCtrl.shareBalanceToChild);
 
 module.exports = router;

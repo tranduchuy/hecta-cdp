@@ -1,4 +1,4 @@
-const UserModel = require('user.model');
+const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
@@ -97,6 +97,6 @@ const transactionSchema = {
 
 const Transaction = sequelize.define('transaction', transactionSchema, {
   freezeTableName: true,
-  tableName: 'USER'
+  tableName: 'TRANSACTION'
 });
 module.exports = Transaction;

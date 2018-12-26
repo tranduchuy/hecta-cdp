@@ -116,7 +116,7 @@ const createBalanceInfo = async (userId) => {
  */
 const getBalanceInfo = async (userId) => {
   const user = await UserModel.findById(userId);
-  const balance = await BalanceModel.findOne({userId});
+  const balance = await BalanceModel.findOne({where: {userId}});
   const result = {
     main1: balance.main1,
     main2: balance.main2,
@@ -214,7 +214,7 @@ const updateMain1 = async (userId, amount) => {
   });
 
   balance.main1 = balance.main1 + amount;
-  return balance.save();
+  return await balance.save();
 };
 
 const addTransactionForParentShareCredit = async (parentId, childId, amount, before, after) => {
@@ -240,8 +240,8 @@ const addTransactionForParentShareCredit = async (parentId, childId, amount, bef
 
 const addTransactionForChildReceiveCredit = async (parentId, childId, amount, before, after) => {
   const newTransaction = TransactionModel.build({
-    userId: parentId,
-    fromUserId: childId,
+    userId: childId,
+    fromUserId: parentId,
     amount,
     type: TransactionTypeConstant.ReceiveCredit,
     content: 'Child receive credit from parent',

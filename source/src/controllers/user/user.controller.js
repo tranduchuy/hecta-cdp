@@ -700,7 +700,7 @@ const shareBalanceToChild = async (req, res, next) => {
     }
 
     // Check relation between parent and child
-    const relation = URModel.findOne({
+    const relation = await URModel.findOne({
       parentId: req.user.id,
       childId: childId,
       status: StatusConstant.ChildAccepted
@@ -715,14 +715,18 @@ const shareBalanceToChild = async (req, res, next) => {
     const afterParentBalance = await UserService.updateMain1(req.user.id, -amount);
     logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update success for parent ${req.user.id}. From ${JSON.stringify(parentBalanceInfo)} to ${JSON.stringify(afterParentBalance)}`);
 
-    const afterChildBalance = await UserService.updateMain1(childId, amount);
-    logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update success for child ${childId}. From ${JSON.stringify(childBalanceInfo)} to ${JSON.stringify(afterParentBalance)}`);
+    // NOT update child's main1. Just update relation.credit
+    relation.credit = (relation.credit || 0) + amount;
+    await relation.save();
+    logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update relation credit success`);
 
     const t1 = await UserService.addTransactionForParentShareCredit(req.user.id, childId, amount, parentBalanceInfo, afterParentBalance);
-    logger.info(`UserController::shareBalanceToChild::create transaction for parent success. `, t1);
+    logger.info(`UserController::shareBalanceToChild::create transaction for parent success. `, JSON.stringify(t1));
 
+    const afterChildBalance = Object.assign({}, childBalanceInfo, {credit: relation.credit});
     const t2 = await UserService.addTransactionForChildReceiveCredit(req.user.id, childId, amount, childBalanceInfo, afterChildBalance);
-    logger.info(`UserController::shareBalanceToChild::create transaction for child success. `, t2);
+    logger.info(`UserController::shareBalanceToChild::create transaction for child success. `, JSON.stringify(t2));
+
     logger.info(`UserController::shareBalanceToChild::success. From ${req.user.id} to ${childId} with amount ${amount}`);
 
     return res.json({

@@ -3,11 +3,11 @@ module.exports = {
   properties: {
     childId: {
       type: 'number',
-      minValue: 1
+      minimum: 1
     },
     amount: {
       type: 'number',
-      minValue: 1
+      minimum: 1
     }
   },
   required: ['childId', 'amount']

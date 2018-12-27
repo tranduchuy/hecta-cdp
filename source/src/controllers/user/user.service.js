@@ -127,8 +127,10 @@ const getBalanceInfo = async (userId) => {
     result.credit = 0;
     result.usedCredit = 0;
     const relation = await UserRelationShipModel.findOne({
-      childId: userId,
-      status: StatusConstant.ChildAccepted
+      where: {
+        childId: userId,
+        status: StatusConstant.ChildAccepted
+      }
     });
 
     if (relation) {
@@ -151,7 +153,8 @@ const isValidUpdateType = async (userId) => {
   try {
     const findParentResult = await UserRelationShipModel.findAndCountAll({
       where: {
-        userId
+        childId: userId,
+        delFlag: GlobalConstant.DelFlag.False
       }
     });
 
@@ -161,7 +164,8 @@ const isValidUpdateType = async (userId) => {
 
     const findChildrenResult = await UserRelationShipModel.findAndCountAll({
       where: {
-        parentId: userId
+        parentId: userId,
+        delFlag: GlobalConstant.DelFlag.False
       }
     });
 

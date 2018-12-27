@@ -2,11 +2,13 @@ const GlobalConstant = require('../../constants/global.constant');
 const StatusConstant = require('../../constants/status.constant');
 const UserConstant = require('../../controllers/user/user.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
+const TransactionTypeConstant = require('../../constants/transaction-type.constant');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const Sequelize = require('sequelize');
 const RandomString = require('randomstring');
 const bcrypt = require('bcrypt');
+const UserService = require('../user/user.service');
 
 // models
 /**
@@ -17,6 +19,10 @@ const UserRelationshipModel = require('../../models/user-relationship.model');
  * @type UserModel
  */
 const UserModel = require('../../models/user.model');
+/**
+ * @type TransactionModel
+ */
+const TransactionModel = require('../../models/transaction.model');
 
 /**
  *
@@ -27,7 +33,8 @@ const UserModel = require('../../models/user.model');
 const getListChildren = async (userId, options) => {
   return await UserRelationshipModel.findAndCountAll({
     where: {
-      parentId: userId
+      parentId: userId,
+      delFlag: GlobalConstant.DelFlag.False
     },
     include: [
       {
@@ -51,13 +58,15 @@ const getListChildren = async (userId, options) => {
 const isValidToBeChild = async (userId) => {
   const roleChildRelations = await UserRelationshipModel.findOne({
     where: {
-      childId: userId
+      childId: userId,
+      delFlag: GlobalConstant.DelFlag.False
     }
   });
 
   const roleParentRelation = await UserRelationshipModel.findOne({
     where: {
-      parentId: userId
+      parentId: userId,
+      delFlag: GlobalConstant.DelFlag.False
     }
   });
 
@@ -89,7 +98,8 @@ async function isExistRelation(parentId, childId) {
   const relation = await UserRelationshipModel.findOne({
     where: {
       parentId,
-      childId
+      childId,
+      delFlag: GlobalConstant.DelFlag.False
     }
   });
 
@@ -143,8 +153,100 @@ const registerNewChild = async ({email, password, name, username, phone, address
   return await newUser.save();
 };
 
-const getListRequest = async (req, res, next) => {
+const findRelationship = async (parentId, childId) => {
+  return await UserRelationshipModel.findOne({
+    where: {
+      parentId,
+      childId,
+      delFlag: GlobalConstant.DelFlag.False
+    }
+  });
+};
 
+/**
+ *
+ * @param parentId
+ * @param childId
+ * @param amount
+ * @param before
+ * @param after
+ * @param note
+ * @return {Promise<UserRelationshipModel|Errors.ValidationError>}
+ */
+const createTransactionTakeMoneyBack = async ({parentId, childId, amount, before, after, note}) => {
+  const newTransaction = TransactionModel.build({
+    userId: parentId,
+    fromUserId: childId,
+    amount,
+    type: TransactionTypeConstant.TakeBackMoney,
+    content: 'Parent get credit back',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
+const createTransactionReturnMoney = async ({parentId, childId, amount, before, after, note}) => {
+  const newTransaction = TransactionModel.build({
+    userId: childId,
+    fromUserId: parentId,
+    amount,
+    type: TransactionTypeConstant.ReturnMoney,
+    content: 'Return credit for parent',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
+/**
+ *
+ * @param parentId
+ * @param childId
+ * @param {UserRelationShipModel} relation
+ * @return {Promise<void>}
+ */
+const doProcessGetBackParentMoney = async (parentId, childId, relation) => {
+  const bParentBalance = await UserService.getBalanceInfo(parentId);
+  const bChildBalance = await UserService.getBalanceInfo(childId);
+  const amount = relation.credit;
+
+  // 1. reset relation credit
+  const aParentBalance = Object.assign({}, bParentBalance, {main1: bParentBalance.main1 + amount});
+  const aChildBalance = Object.assign({}, bChildBalance, {credit: 0});
+  relation.credit = 0;
+  await relation.save();
+  logger.info(`UserRelationShipService::doProcessGetBackParentMoney::update relation.credit to 0 successfully. Relation id ${relation.id}`);
+
+  // 2. update parent's main1
+  await UserService.updateMain1(parentId, amount);
+  logger.info(`UserRelationShipService::doProcessGetBackParentMoney::update parent's main1 successfully. New value ${aParentBalance.main1}. Parent's id ${parentId}`);
+
+  // 3. create transaction get money back
+  const t1 = await createTransactionTakeMoneyBack({parentId, childId, amount, after: aParentBalance, before: bParentBalance, note: ''});
+  logger.info(`UserRelationShipService::doProcessGetBackParentMoney::create transaction take money back. Transaction id ${t1.id}`);
+
+  // 4. create transaction return money
+  const t2 = await createTransactionReturnMoney({parentId, childId, amount, after: aChildBalance, before: bChildBalance, note: ''});
+  logger.info(`UserRelationShipService::doProcessGetBackParentMoney::create transaction return money. Transaction id ${t2.id}`);
+
+  return aParentBalance;
 };
 
 module.exports = {
@@ -154,5 +256,6 @@ module.exports = {
   getListChildren,
   mapQueryToValidObjectSort,
   registerNewChild,
-  getListRequest
+  findRelationship,
+  doProcessGetBackParentMoney
 };

@@ -14,4 +14,7 @@ router.post('/add-child', UserRelationShipCtrl.addNewChild);
 
 // PUT
 
+// DELETE
+router.delete('/remove-child', UserRelationShipCtrl.removeChild);
+
 module.exports = router;

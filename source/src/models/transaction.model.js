@@ -2,6 +2,30 @@ const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
+/**
+ * @typedef {Object} TransactionCols
+ * @property {number} id
+ * @property {date} createdAt
+ * @property {date} updatedAt
+ * @property {number} type
+ * @property {string} content
+ * @property {number} userId
+ * @property {number} fromUserId
+ * @property {number} amount
+ * @property {string} note
+ * @property {number} bCredit
+ * @property {number} bMain1
+ * @property {number} bMain2
+ * @property {number} bPromo
+ * @property {number} aCredit
+ * @property {number} aMain1
+ * @property {number} aMain2
+ * @property {number} aPromo
+ *
+ * @typedef {Model & TransactionCols} TransactionModel
+ *
+ * */
+
 const transactionSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,

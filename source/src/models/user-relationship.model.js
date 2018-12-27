@@ -6,13 +6,15 @@
  * @property {date} createdAt
  * @property {date} updatedAt
  * @property {number} credit
+ * @property {number} delFlag
  * @property {number} status
  * @property {number} usedCredit
  *
- * @typedef {Model & UserRelationShip} UserRelationShipModel
+ * @typedef {Model & UserRelationshipCols} UserRelationShipModel
  */
 
 const StatusConstant = require('../constants/status.constant');
+const GlobalConstant = require('../constants/global.constant');
 const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
@@ -54,6 +56,11 @@ const userRelationShipSchema = {
     type: Sequelize.DataTypes.BIGINT,
     field: 'USED_CREDIT',
     defaultValue: 0
+  },
+  delFlag: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'DEL_FLAG',
+    defaultValue: GlobalConstant.DelFlag.False
   },
   createdAt: {
     type: Sequelize.DataTypes.DATE,

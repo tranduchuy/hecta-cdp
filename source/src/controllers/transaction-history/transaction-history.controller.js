@@ -83,7 +83,7 @@ const listChildTransactionHistory = async (req, res, next) => {
             });
         }
         
-        const userRelation = TransHisService.checkUserRelationShip(req.user.id, req.query.childId);
+        const userRelation = await TransHisService.checkUserRelationShip(req.user.id, req.query.childId);
         if (!userRelation.count){
             return res.json({
                 status: HttpCodeConstant.Error,

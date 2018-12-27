@@ -28,6 +28,7 @@ const replyRequestRelationSchema = require('./validation-schemas/reply-request.s
 const addNewChildSchema = require('./validation-schemas/add-new-child.schema');
 const childDetailSchema = require('./validation-schemas/child-detail.schema');
 const listRequestSchema = require('./validation-schemas/list-request.schema');
+const removeChildSchema = require('./validation-schemas/remove-child.schema');
 
 /**
  * Api get list children of logged in user
@@ -348,11 +349,63 @@ const listRequest = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<*>}
+ */
+const removeChild = async (req, res, next) => {
+  logger.info(`UserController::removeChild::called`);
+
+  try {
+    const errors = AJV(removeChildSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const child = await UserModel.findById(req.query.childId);
+    if (!child) {
+      logger.error(`${ctrlNm}::removeChild::error. Child not found. User id ${req.query.childId}`);
+      return next(new Error('Account child not found'));
+    }
+
+    const relation = await URService.findRelationship(req.user.id, req.query.childId);
+    if (!relation) {
+      logger.error(`${ctrlNm}::removeChild::error. Relation is not exists. Parent ${req.user.id}, child ${req.query.childId}`);
+      return next(new Error('Relation not exist.'));
+    }
+
+    const aParentBalance = await URService.doProcessGetBackParentMoney(req.user.id, req.query.childId, relation);
+    relation.delFlag = GlobalConstant.DelFlag.True;
+    await relation.save();
+    logger.info(`${ctrlNm}::removeChild::success`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {balance: aParentBalance},
+        entries: {}
+      }
+    });
+  } catch (e) {
+    logger.error(`UserController::removeChild::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
   replyRequest,
   addNewChild,
   getDetailChild,
-  listRequest
+  listRequest,
+  removeChild
 };

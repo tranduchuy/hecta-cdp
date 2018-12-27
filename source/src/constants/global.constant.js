@@ -11,5 +11,9 @@ module.exports = {
   Pagination: {
     DefaultLimit: 10,
     DefaultPage: 1
+  },
+  DelFlag: {
+    True: 1,
+    False: 0
   }
 };

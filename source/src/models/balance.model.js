@@ -2,6 +2,21 @@ const UserModel = require('./user.model');
 const {sequelize} = require('../services/db');
 const Sequelize = require('sequelize');
 
+/**
+ *
+ * @typedef Object BalanceCols
+ * @property {number} id
+ * @property {number} main1
+ * @property {number} main2
+ * @property {number} promo
+ * @property {date} createdAt
+ * @property {date} updatedAt
+ * @property {number} userId
+ *
+ * @typedef {Model & BalanceCols} BalanceModel
+ *
+ */
+
 const balanceSchema = {
   id: {
     type: Sequelize.DataTypes.INTEGER,

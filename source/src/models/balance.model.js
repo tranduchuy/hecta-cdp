@@ -63,4 +63,5 @@ const Balance = sequelize.define('balance', balanceSchema, {
   freezeTableName: true,
   tableName: 'BALANCE'
 });
+
 module.exports = Balance;

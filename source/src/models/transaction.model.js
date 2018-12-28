@@ -123,11 +123,18 @@ const Transaction = sequelize.define('transaction', transactionSchema, {
   freezeTableName: true,
   tableName: 'TRANSACTION'
 });
+
 module.exports = Transaction;
 
 Transaction.belongsTo(UserModel, {
   foreignKey: 'fromUserId',
     constraints: false,
     as: 'fromUserInfo'
+});
+
+Transaction.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  constraints: false,
+  as: 'userInfo'
 });
     

@@ -16,5 +16,6 @@ router.post('/add-child', UserRelationShipCtrl.addNewChild);
 
 // DELETE
 router.delete('/remove-child', UserRelationShipCtrl.removeChild);
+router.delete('/remove-parent', UserRelationShipCtrl.removeParent);
 
 module.exports = router;

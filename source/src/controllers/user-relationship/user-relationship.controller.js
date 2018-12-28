@@ -29,6 +29,7 @@ const addNewChildSchema = require('./validation-schemas/add-new-child.schema');
 const childDetailSchema = require('./validation-schemas/child-detail.schema');
 const listRequestSchema = require('./validation-schemas/list-request.schema');
 const removeChildSchema = require('./validation-schemas/remove-child.schema');
+const removeParentSchema = require('./validation-schemas/remove-parent.schema');
 
 /**
  * Api get list children of logged in user
@@ -400,6 +401,50 @@ const removeChild = async (req, res, next) => {
   }
 };
 
+const removeParent = async (req, res, next) => {
+  logger.info(`${ctrlNm}::removeParent::called`);
+
+  try {
+    const errors = AJV(removeParentSchema, req.query);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const parent = await UserModel.findById(req.query.parentId);
+    if (!parent) {
+      logger.error(`${ctrlNm}::removeParent::error. Parent account not found. Id ${req.query.parentId}`);
+      return next(new Error('Parent not found'));
+    }
+
+    const relation = await URService.findRelationship(req.query.parentId, req.user.id);
+    if (!relation) {
+      logger.error(`${ctrlNm}::removeParent::error. Relation is not exist`);
+      return next(new Error('Relation is not exists'));
+    }
+
+    await URService.doProcessGetBackParentMoney(req.query.childId, req.user.id, relation);
+    relation.delFlag = GlobalConstant.DelFlag.True;
+    await relation.save();
+    logger.info(`${ctrlNm}::removeParent::success`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: {}
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::removeParent::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
@@ -407,5 +452,6 @@ module.exports = {
   addNewChild,
   getDetailChild,
   listRequest,
-  removeChild
+  removeChild,
+  removeParent
 };

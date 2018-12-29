@@ -19,6 +19,7 @@ const Sequelize = require('sequelize');
 const StatusConstant = require('../../constants/status.constant');
 const UserRoleConstant = require('../../constants/user-role.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
+const TransactionTypeConstant = require('../../constants/transaction-type.constant');
 
 // validate schema
 const loginSchema = require('./validation-schemas/login.schema');
@@ -30,6 +31,7 @@ const forgetPasswordSchema = require('./validation-schemas/forget-password.schem
 const resetPasswordSchema = require('./validation-schemas/reset-password.schema');
 const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-email.schema');
 const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
+const updateBalanceSchema = require('./validation-schemas/update-balance.schema');
 
 /**
  *
@@ -746,6 +748,102 @@ const shareBalanceToChild = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<void>}
+ */
+const updateBalance = async (req, res, next) => {
+  logger.info('UserController::updateBalance::called');
+
+  try {
+    const errors = AJV(updateBalanceSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    if (![UserRoleConstant.Master, UserRoleConstant.Admin].some(r => r === req.user.role)) {
+      return next(new Error('Permission denied'));
+    }
+
+    const {main1, main2, promo, userId} = req.body;
+    const balanceInstance = await UserService.getBalanceInstance(userId);
+    let bBalanceInfo = await UserService.getBalanceInfo(userId);
+    let aBalanceInfo = {...bBalanceInfo};
+
+    // update main 1
+    if (main1) {
+      aBalanceInfo.main1 = bBalanceInfo.main1 + main1;
+      const t = await UserService.addTransactionUpdateBalance({
+        parentId: req.user.id,
+        userId,
+        amount: main1,
+        before: bBalanceInfo,
+        after: aBalanceInfo,
+        type: TransactionTypeConstant.AddMain
+      });
+
+      logger.info(`UserController::updateBalance::create transaction updating balance main1 TRANSACTION_ID ${t.id}`);
+    }
+
+    // update main 2
+    if (main2) {
+      bBalanceInfo = {...aBalanceInfo};
+      aBalanceInfo.main2 = aBalanceInfo.main2 + main2;
+      const t = await UserService.addTransactionUpdateBalance({
+        parentId: req.user.id,
+        userId,
+        amount: main2,
+        before: bBalanceInfo,
+        after: aBalanceInfo,
+        type: TransactionTypeConstant.AddMain
+      });
+
+      logger.info(`UserController::updateBalance::create transaction updating balance main2 TRANSACTION_ID ${t.id}`);
+    }
+
+    // update main2
+    if (promo) {
+      bBalanceInfo = {...aBalanceInfo};
+      aBalanceInfo.promo = aBalanceInfo.promo + promo;
+      const t = await UserService.addTransactionUpdateBalance({
+        parentId: req.user.id,
+        userId,
+        amount: promo,
+        before: bBalanceInfo,
+        after: aBalanceInfo,
+        type: TransactionTypeConstant.AddPromo
+      });
+
+      logger.info(`UserController::updateBalance::create transaction updating balance promo TRANSACTION_ID ${t.id}`);
+    }
+
+    balanceInstance.main1 = aBalanceInfo.main1;
+    balanceInstance.main2 = aBalanceInfo.main2;
+    balanceInstance.promo = aBalanceInfo.promo;
+    await balanceInstance.save();
+    logger.info(`UserController::updateBalance::success. Update balance of ${userId} success.`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [aBalanceInfo]
+      }
+    });
+  } catch (e) {
+    logger.error(`UserController::updateBalance::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -758,5 +856,6 @@ module.exports = {
   resetPassword,
   findDetailByEmail,
   getHighlightUser,
-  shareBalanceToChild
+  shareBalanceToChild,
+  updateBalance
 };

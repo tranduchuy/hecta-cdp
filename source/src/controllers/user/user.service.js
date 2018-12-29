@@ -263,17 +263,61 @@ const addTransactionForChildReceiveCredit = async (parentId, childId, amount, be
   return await newTransaction.save();
 };
 
+/**
+ * Get balance instance of a user
+ * @param {number} userId
+ * @return {Promise<BalanceModel>}
+ */
+const getBalanceInstance = async (userId) => {
+  return await BalanceModel.findOne({
+    where: {userId}
+  });
+};
+
+
+const addTransactionUpdateBalance = async ({parentId, userId, type, before, after, amount}) => {
+  let content = '';
+  switch (type) {
+    case TransactionTypeConstant.AddMain:
+      content = 'Admin update main amount';
+      break;
+    case TransactionTypeConstant.AddPromo:
+      content = 'Admin update promo amount';
+      break;
+  }
+
+  const newTransaction = TransactionModel.build({
+    fromUserId: parentId,
+    userId,
+    type,
+    amount,
+    content,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return newTransaction.save();
+};
+
 module.exports = {
+  addTransactionForParentShareCredit,
+  addTransactionForChildReceiveCredit,
+  addTransactionUpdateBalance,
+  blockUserForgetPassword,
   createBalanceInfo,
   createUser,
-  findByEmailOrUsername,
-  getBalanceInfo,
   generateToken,
+  getBalanceInfo,
+  getBalanceInstance,
+  findByEmailOrUsername,
+  isExpiredTokenResetPassword,
   isValidHashPassword,
   isValidUpdateType,
-  blockUserForgetPassword,
-  isExpiredTokenResetPassword,
-  updateMain1,
-  addTransactionForParentShareCredit,
-  addTransactionForChildReceiveCredit
+  updateMain1
 };

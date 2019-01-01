@@ -1,4 +1,7 @@
 const express = require('express');
+/**
+ * @type {Object}
+ */
 const router = express.Router({});
 const UserCtrl = require('../controllers/user/user.controller');
 
@@ -20,5 +23,6 @@ router.post('/register', UserCtrl.register);
 router.post('/reset-password', UserCtrl.resetPassword);
 router.post('/share-credit', UserCtrl.shareBalanceToChild);
 router.post('/balance', UserCtrl.updateBalance);
+router.post('/balance/sale-cost', UserCtrl.updateBalanceSaleCost);
 
 module.exports = router;

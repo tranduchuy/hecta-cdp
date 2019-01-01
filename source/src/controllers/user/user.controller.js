@@ -32,6 +32,7 @@ const resetPasswordSchema = require('./validation-schemas/reset-password.schema'
 const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-email.schema');
 const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
 const updateBalanceSchema = require('./validation-schemas/update-balance.schema');
+const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance-by-sale-cost.schema');
 
 /**
  *
@@ -844,6 +845,47 @@ const updateBalance = async (req, res, next) => {
   }
 };
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<*>}
+ */
+const updateBalanceSaleCost = async (req, res, next) => {
+  logger.info(`UserController::updateBalanceSaleCost::called`);
+  // TODO: note property should include sale_id (mongo id)
+
+  try {
+    const errors = AJV(updateBalanceSaleCostSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const {userId, cost, note} = req.body;
+    UserService.updateBalanceSaleCost(userId, cost, note)
+      .then(() => {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Success'],
+          data: {meta: {}, entries: []}
+        });
+      })
+      .catch(err => {
+        logger.error(`UserController::updateBalanceSaleCost::error`, err);
+        return next(err);
+      });
+
+  } catch (e) {
+    logger.error(`UserController::updateBalanceSaleCost::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -857,5 +899,6 @@ module.exports = {
   findDetailByEmail,
   getHighlightUser,
   shareBalanceToChild,
-  updateBalance
+  updateBalance,
+  updateBalanceSaleCost
 };

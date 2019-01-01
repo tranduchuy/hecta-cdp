@@ -129,7 +129,8 @@ const getBalanceInfo = async (userId) => {
     const relation = await UserRelationShipModel.findOne({
       where: {
         childId: userId,
-        status: StatusConstant.ChildAccepted
+        status: StatusConstant.ChildAccepted,
+        delFlag: GlobalConstant.DelFlag.False
       }
     });
 
@@ -274,7 +275,6 @@ const getBalanceInstance = async (userId) => {
   });
 };
 
-
 const addTransactionUpdateBalance = async ({parentId, userId, type, before, after, amount}) => {
   let content = '';
   switch (type) {
@@ -305,10 +305,113 @@ const addTransactionUpdateBalance = async ({parentId, userId, type, before, afte
   return newTransaction.save();
 };
 
+/**
+ * Substract wallet by cost. Wallet maybe: credit, promo, main2, main1
+ * @param walletAmount
+ * @param cost
+ * @return {{walletAmount: *, cost: *}}
+ */
+const subtractAmountByAWallet = ({walletAmount, cost}) => {
+  if (walletAmount > cost) {
+    walletAmount -= cost;
+    cost = 0;
+  } else {
+    walletAmount = 0;
+    cost -= walletAmount;
+  }
+
+  return {walletAmount, cost};
+};
+
+const subtractWalletsByCost = (balanceInfo, cost) => {
+  let _cost = cost;
+  let afterBalanceInfo = {...balanceInfo};
+  // TODO: chưa handle case main2. Chưa có rule cụ thể
+  ['credit', 'promo', 'main1'].forEach(walletType => {
+    if (afterBalanceInfo[walletType] > _cost) {
+      afterBalanceInfo[walletType] -= _cost;
+      _cost = 0;
+    } else {
+      _cost -= afterBalanceInfo[walletType];
+      afterBalanceInfo[walletType] = 0;
+    }
+  });
+
+  return afterBalanceInfo;
+};
+
+const getTotalAmountOfWallets = ({main1, promo, credit}) => {
+  // TODO: chưa handle case main2. Chưa có rule cụ thể
+  return main1 + promo + credit;
+};
+
+const updateBalanceSaleCost = (userId, cost, note) => {
+  return new Promise(async (resolve, reject) => {
+    const relation = await UserRelationShipModel.findOne({
+      where: {
+        childId: userId,
+        status: StatusConstant.ChildAccepted,
+        delFlag: GlobalConstant.DelFlag.False
+      }
+    });
+
+    const bBalanceInfo = await getBalanceInfo(userId);
+    bBalanceInfo.credit = bBalanceInfo.credit || 0;
+    const totalAmount = getTotalAmountOfWallets(bBalanceInfo);
+
+    if (totalAmount < cost) {
+      logger.error(`UserService::updateBalanceSaleCost::error. Not enough amount for purchasing sale`);
+      return reject(new Error('Credit is not enough to purchasing sale'));
+    }
+
+    const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost);
+    if (relation) {
+      relation.credit = aBalanceInfo.credit;
+      await relation.save();
+      logger.info(`UserService::updateBalanceSaleCost::Update relation balance.credit. Relation id ${relation.id}`);
+    }
+
+    // update balance instance
+    const balanceInstance = await getBalanceInstance(userId);
+    balanceInstance.main1 = aBalanceInfo.main1;
+    balanceInstance.main2 = aBalanceInfo.main2;
+    balanceInstance.promo = aBalanceInfo.promo;
+    await balanceInstance.save();
+    logger.info(`UserService::updateBalanceSaleCost::update balance of user ${userId}`);
+
+    const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
+    logger.info(`UserService::updateBalanceSaleCost::create transaction sale cost, transaction id ${t.id}`);
+
+    return resolve('Purchasing sale success');
+  });
+};
+
+const addTransactionCostOfSale = async (userId, amount, note, after, before) => {
+  const newTransaction = TransactionModel.build({
+    userId,
+    fromUserId: null,
+    amount,
+    type: TransactionTypeConstant.ShareCredit,
+    content: 'Cost of sale',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
   addTransactionUpdateBalance,
+  addTransactionCostOfSale,
   blockUserForgetPassword,
   createBalanceInfo,
   createUser,
@@ -319,5 +422,6 @@ module.exports = {
   isExpiredTokenResetPassword,
   isValidHashPassword,
   isValidUpdateType,
-  updateMain1
+  updateMain1,
+  updateBalanceSaleCost
 };

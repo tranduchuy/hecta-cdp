@@ -345,7 +345,7 @@ const getTotalAmountOfWallets = ({main1, promo, credit}) => {
   return main1 + promo + credit;
 };
 
-const updateBalanceSaleCost = (userId, cost, note) => {
+const updateBalanceWhenBuyingSomething = (userId, cost, note, targetType) => {
   return new Promise(async (resolve, reject) => {
     const relation = await UserRelationShipModel.findOne({
       where: {
@@ -360,15 +360,16 @@ const updateBalanceSaleCost = (userId, cost, note) => {
     const totalAmount = getTotalAmountOfWallets(bBalanceInfo);
 
     if (totalAmount < cost) {
-      logger.error(`UserService::updateBalanceSaleCost::error. Not enough amount for purchasing sale`);
+      logger.error(`UserService::updateBalanceWhenBuyingSomething::error. Not enough amount for purchasing sale`);
       return reject(new Error('Credit is not enough to purchasing sale'));
     }
 
     const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost);
     if (relation) {
       relation.credit = aBalanceInfo.credit;
+      relation.usedCredit = (relation.usedCredit || 0) + cost;
       await relation.save();
-      logger.info(`UserService::updateBalanceSaleCost::Update relation balance.credit. Relation id ${relation.id}`);
+      logger.info(`UserService::updateBalanceWhenBuyingSomething::Update relation balance.credit. Relation id ${relation.id}`);
     }
 
     // update balance instance
@@ -377,22 +378,49 @@ const updateBalanceSaleCost = (userId, cost, note) => {
     balanceInstance.main2 = aBalanceInfo.main2;
     balanceInstance.promo = aBalanceInfo.promo;
     await balanceInstance.save();
-    logger.info(`UserService::updateBalanceSaleCost::update balance of user ${userId}`);
+    logger.info(`UserService::updateBalanceWhenBuyingSomething::update balance of user ${userId}`);
 
-    const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
-    logger.info(`UserService::updateBalanceSaleCost::create transaction sale cost, transaction id ${t.id}`);
+    if (targetType === 'SALE') {
+      const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
+      logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
+    } else if (targetType === 'UP_NEWS') {
+      const t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
+      logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
+    }
+
 
     return resolve('Purchasing sale success');
   });
 };
 
-const addTransactionCostOfSale = async (userId, amount, note, after, before) => {
+const addTransactionCostOfSale = async (userId, amount, note, before, after) => {
   const newTransaction = TransactionModel.build({
     userId,
     fromUserId: null,
     amount,
-    type: TransactionTypeConstant.ShareCredit,
+    type: TransactionTypeConstant.PayPost,
     content: 'Cost of sale',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
+const addTransactionCostOfNews = async (userId, amount, note, before, after) => {
+  const newTransaction = TransactionModel.build({
+    userId,
+    fromUserId: null,
+    amount,
+    type: TransactionTypeConstant.UpNew,
+    content: 'Cost of up news',
     note,
     bCredit: before.credit || 0,
     bMain1: before.main1,
@@ -412,6 +440,7 @@ module.exports = {
   addTransactionForChildReceiveCredit,
   addTransactionUpdateBalance,
   addTransactionCostOfSale,
+  addTransactionCostOfNews,
   blockUserForgetPassword,
   createBalanceInfo,
   createUser,
@@ -423,5 +452,5 @@ module.exports = {
   isValidHashPassword,
   isValidUpdateType,
   updateMain1,
-  updateBalanceSaleCost
+  updateBalanceWhenBuyingSomething
 };

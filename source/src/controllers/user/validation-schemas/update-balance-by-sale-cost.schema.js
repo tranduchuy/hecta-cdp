@@ -1,10 +1,6 @@
 module.exports = {
   type: 'object',
   properties: {
-    userId: {
-      type: 'number',
-      minimum: 1
-    },
     cost: {
       type: 'number',
       minimum: 0
@@ -14,5 +10,5 @@ module.exports = {
       minLength: 20
     }
   },
-  required: ['userId', 'cost', 'note']
+  required: ['cost', 'note']
 };

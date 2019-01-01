@@ -866,8 +866,8 @@ const updateBalanceSaleCost = async (req, res, next) => {
       });
     }
 
-    const {userId, cost, note} = req.body;
-    UserService.updateBalanceSaleCost(userId, cost, note)
+    const {cost, note} = req.body;
+    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'SALE')
       .then(() => {
         return res.json({
           status: HttpCodeConstant.Success,
@@ -886,6 +886,40 @@ const updateBalanceSaleCost = async (req, res, next) => {
   }
 };
 
+const updateBalanceUpNewsCost = async (req, res, next) => {
+  logger.info(`UserController::updateBalanceUpNewsCost::called`);
+  // TODO: note property should include sale_id (mongo id)
+
+  try {
+    // using same schema with function updateBalanceSaleCost
+    const errors = AJV(updateBalanceSaleCostSchema, req.body);
+    if (errors.length !== 0) {
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
+    }
+
+    const {cost, note} = req.body;
+    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'UP_NEWS')
+      .then(() => {
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Success'],
+          data: {meta: {}, entries: []}
+        });
+      })
+      .catch(err => {
+        logger.error(`UserController::updateBalanceUpNewsCost::error`, err);
+        return next(err);
+      });
+  } catch (e) {
+    logger.error(`UserController::updateBalanceUpNewsCost::error`, e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -900,5 +934,6 @@ module.exports = {
   getHighlightUser,
   shareBalanceToChild,
   updateBalance,
-  updateBalanceSaleCost
+  updateBalanceSaleCost,
+  updateBalanceUpNewsCost
 };

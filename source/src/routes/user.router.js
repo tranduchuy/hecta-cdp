@@ -24,5 +24,6 @@ router.post('/reset-password', UserCtrl.resetPassword);
 router.post('/share-credit', UserCtrl.shareBalanceToChild);
 router.post('/balance', UserCtrl.updateBalance);
 router.post('/balance/sale-cost', UserCtrl.updateBalanceSaleCost);
+router.post('/balance/up-news-cost', UserCtrl.updateBalanceUpNewsCost);
 
 module.exports = router;

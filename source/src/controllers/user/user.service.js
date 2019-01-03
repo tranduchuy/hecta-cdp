@@ -204,7 +204,7 @@ const blockUserForgetPassword = async (user) => {
  * @returns {boolean}
  */
 const isExpiredTokenResetPassword = (expiredOn) => {
-  return moment().isBefore(moment(expiredOn));
+  return moment(expiredOn).isBefore(moment());
 };
 
 /**

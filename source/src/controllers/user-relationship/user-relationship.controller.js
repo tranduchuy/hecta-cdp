@@ -259,13 +259,18 @@ const replyRequest = async (req, res, next) => {
     const {status, relationId} = req.body;
     const relation = await URModel.findById(relationId);
     if (!relation) {
-      logger.error(`${ctrlNm}::replyRequest::error. Not found by id: ${relationId}`);
+      logger.error(`${ctrlNm}::replyRequest::error. Not found by relation id: ${relationId}`);
       return next(new Error('Not found'));
     }
 
     if (relation.childId !== req.user.id) {
       logger.error(`${ctrlNm}::replyRequest::error. Permission denied`);
       return next(new Error('Permission denied'));
+    }
+
+    if (relation.status !== StatusConstant.ChildWaiting) {
+      logger.error(`${ctrlNm}::replyRequest::error. Action is not permitted. User ${req.user.id} try to update relation status, but current status is not WAITING`);
+      return next(new Error('Action is not permitted'));
     }
 
     relation.status = status;
@@ -275,7 +280,15 @@ const replyRequest = async (req, res, next) => {
     return res.json({
       status: HttpCodeConstant.Success,
       messages: ['Success'],
-      data: {meta: {}, entries: [relation]}
+      data: {
+        meta: {},
+        entries: [{
+          parentId: relation.parentId,
+          childId: relation.childId,
+          credit: relation.credit,
+          usedCredit: relation.usedCredit
+        }]
+      }
     });
   } catch (e) {
     logger.error(`${ctrlNm}::replyRequest::error`, e);

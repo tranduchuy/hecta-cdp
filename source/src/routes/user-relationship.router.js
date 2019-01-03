@@ -7,7 +7,7 @@ const UserRelationShipCtrl = require('../controllers/user-relationship/user-rela
 
 // GET
 router.get('/children', UserRelationShipCtrl.listChildren);
-router.get('/child-retail', UserRelationShipCtrl.getDetailChild);
+router.get('/child-detail', UserRelationShipCtrl.getDetailChild);
 router.get('/request', UserRelationShipCtrl.listRequest);
 
 // POST

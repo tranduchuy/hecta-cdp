@@ -316,7 +316,7 @@ const updateInfo = async (req, res, next) => {
       gender: gender || targetUser.gender,
       password: password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash,
       type: type || targetUser.type,
-      status: availableToUpdateStatus ? status : targetUser.status
+      status: isAdmin ? status : targetUser.status
     };
 
     await UserModel.update(dataToUpdate);

@@ -72,6 +72,7 @@ const login = async (req, res, next) => {
     }
 
     const userInfoResponse = {
+      id: user.id,
       email: user.email,
       username: user.username,
       name: user.name,
@@ -224,6 +225,7 @@ const getInfoLoggedIn = async (req, res, next) => {
 
   try {
     const userInfoResponse = {
+      id: req.user.id,
       email: req.user.email,
       username: req.user.username,
       name: req.user.name,
@@ -275,8 +277,7 @@ const updateInfo = async (req, res, next) => {
     }
 
     // only admin or master can update status of user
-    const availableToUpdateStatus = isAdmin;
-    if (!availableToUpdateStatus && status === undefined) {
+    if (!isAdmin && status !== undefined) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));
     }
@@ -649,7 +650,7 @@ const getHighlightUser = async (req, res, next) => {
       }
     });
 
-    logger.info(`UserController::getHighlightUser::success. Get ${resultUsers.len()} highlight user`);
+    logger.info(`UserController::getHighlightUser::success. Get ${resultUsers.length} highlight user`);
 
     return res.json({
       status: HttpCodeConstant.Success,

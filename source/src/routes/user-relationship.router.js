@@ -1,4 +1,7 @@
 const express = require('express');
+/**
+ * @type {Object}
+ */
 const router = express.Router({});
 const UserRelationShipCtrl = require('../controllers/user-relationship/user-relationship.controller');
 

@@ -115,7 +115,7 @@ const register = async (req, res, next) => {
       return res.json({
         status: HttpCodeConstant.Error,
         messages: errors,
-        data: {}
+        data: {meta: {}, entries: []}
       });
     }
 
@@ -133,8 +133,16 @@ const register = async (req, res, next) => {
 
     const newUser = await UserService.createUser(req.body);
     await UserService.createBalanceInfo(newUser.id);
-    // Send email
-    MailService.sendConfirmEmail(email, newUser.tokenEmailConfirm);
+
+    // nếu là admin tạo thì ko cần gửi email, và mặc định là active sẵn
+    if (req.user && [UserRoleConstant.Master, UserRoleConstant.Admin].some(req.user.role)) {
+      newUser.status = StatusConstant.Active;
+      newUser.tokenEmailConfirm = '';
+      await newUser.save();
+    } else {
+      // Send email
+      MailService.sendConfirmEmail(email, newUser.tokenEmailConfirm);
+    }
 
     logger.info(`UserController::register::success. Email: ${email}`);
     return res.json({
@@ -161,7 +169,7 @@ const register = async (req, res, next) => {
 const confirmRegister = async (req, res, next) => {
   try {
     const {token} = req.query;
-    logger.info(`UsergetBalanceInfoController::confirmRegister::called. Token request: ${token}`);
+    logger.info(`UserController::confirmRegister::called. Token request: ${token}`);
 
     const schemaErrors = AJV(confirmEmailSchema, req.query);
     if (schemaErrors.length !== 0) {
@@ -263,7 +271,7 @@ const updateInfo = async (req, res, next) => {
 
     // only admin or master can update status of user
     const availableToUpdateStatus = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
-    if (!availableToUpdateStatus) {
+    if (!availableToUpdateStatus && status === undefined) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));
     }
@@ -275,17 +283,14 @@ const updateInfo = async (req, res, next) => {
     }
 
     if (type) {
-      const errors = UserService.isValidUpdateType(targetUser);
+      const errors = await UserService.isValidUpdateType(targetUser);
       if (errors.length !== 0) {
         logger.error('UserController::updateInfo::error', errors.join('\n'));
 
         return res.json({
           status: HttpCodeConstant.Error,
           messages: errors,
-          data: {
-            meta: {},
-            entries: []
-          }
+          data: {meta: {},entries: []}
         });
       }
     }
@@ -399,6 +404,7 @@ const checkDuplicateEmailOrUsername = async (req, res, next) => {
     }
 
     logger.error('UserController::checkDuplicateEmailOrUsername::error. Nothing to check');
+
     return next(new Error('Nothing to check duplicate'));
   } catch (e) {
     logger.error('UserController::checkDuplicateEmailOrUsername::error', e);
@@ -478,7 +484,7 @@ const forgetPassword = async (req, res, next) => {
     });
 
     if (!user) {
-      logger.error(`UserController::forgetPassword::error. User not found, find by email: ${req.query.email}`);
+      logger.error(`UserController::forgetPassword::error. User not found, find by email: ${req.query.email}, status ACTIVE`);
       return next(new Error('User not found'));
     }
 

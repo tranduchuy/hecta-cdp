@@ -29,7 +29,7 @@ const checkExistInWhiteList = (path) => {
 module.exports = async (req, res, next) => {
   const token = req.get(GlobalConstant.ApiTokenName);
 
-  if (checkExistInWhiteList(req.path)) {
+  if (checkExistInWhiteList(req.path) && !token) {
     return next();
   }
 

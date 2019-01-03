@@ -1,4 +1,7 @@
 const express = require('express');
+/**
+ * @type {Object}
+ */
 const router = express.Router({});
 const UserCtrl = require('../controllers/transaction-history/transaction-history.controller');
 

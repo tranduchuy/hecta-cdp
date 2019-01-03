@@ -538,7 +538,9 @@ const resetPassword = async (req, res, next) => {
     }
 
     const user = await UserModel.findOne({
-      passwordReminderToken: token
+      where: {
+        passwordReminderToken: token
+      }
     });
 
     if (!user) {

@@ -17,7 +17,7 @@ module.exports = {
     },
     phone: {
       type: 'string',
-      minLength: 11
+      maxLength: 11
     },
     address: {
       type: 'string',

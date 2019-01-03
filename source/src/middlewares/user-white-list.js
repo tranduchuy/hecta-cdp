@@ -4,5 +4,9 @@ module.exports = [
   '/user/login',
   '/user/register',
   '/user/confirm-email',
-  '/user/highlight'
+  '/user/highlight',
+  '/user/check-email-username',
+  '/user/forget-password',
+  '/user/reset-password',
+  '/user/resend-confirm-email'
 ];

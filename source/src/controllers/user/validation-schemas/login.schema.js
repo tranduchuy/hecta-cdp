@@ -14,5 +14,9 @@ module.exports = {
       minLength: 6
     }
   },
-  required: ['password', 'email']
+  required: ['password'],
+  anyOf: [
+    {required: ['email']},
+    {required: ['username']}
+  ]
 };

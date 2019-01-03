@@ -74,6 +74,92 @@ const listChildren = async (req, res, next) => {
 };
 
 /**
+ *
+ * @param res
+ * @param {UserRelationShipModel} relation
+ * @return {Promise<*>}
+ * @private
+ */
+async function _handleAddRegisteredUserCaseExistsRelation(res, relation) {
+  // if delete
+  if (relation.delFlag === GlobalConstant.DelFlag.True) {
+    relation.status = StatusConstant.ChildWaiting;
+    relation.delFlag = GlobalConstant.DelFlag.False;
+    await relation.save();
+    logger.error(`${ctrlNm}::addRegisteredChild::success. Re-create relation ${relation.id} between user ${relation.parentId} and ${relation.childId}`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: [],
+        entries: [{
+          parentId: relation.parentId,
+          childId: relation.childId,
+          credit: relation.credit,
+          usedCredit: relation.usedCredit
+        }]
+      }
+    });
+  }
+
+  // if not delete
+  // status = ACCEPTED
+  if (relation.status === StatusConstant.ChildAccepted) {
+    logger.error(`${ctrlNm}::addRegisteredChild::error. Exist active relation between user ${relation.parentId} and ${relation.childId}.`);
+
+    return res.json({
+      status: HttpCodeConstant.Error,
+      messages: ['Exist active relation between you.'],
+      data: {
+        meta: {},
+        entries: []
+      }
+    });
+  }
+
+  if (relation.status === StatusConstant.ChildWaiting) {
+    logger.error(`${ctrlNm}::addRegisteredChild::error. Exist waiting relation between user ${relation.parentId} and ${relation.childId}.`);
+
+    return res.json({
+      status: HttpCodeConstant.Error,
+      messages: ['Exist waiting relation between you.'],
+      data: {
+        meta: {},
+        entries: []
+      }
+    });
+  }
+
+  if (relation.status === StatusConstant.ChildRejected) {
+    relation.status = StatusConstant.ChildWaiting;
+    await relation.save();
+    logger.info(`${ctrlNm}::addRegisteredChild::success. Re-create relation ${relation.id} from REJECTED to WAITING between ${relation.parentId} and ${relation.childId}.`);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{
+          parentId: relation.parentId,
+          childId: relation.childId,
+          credit: relation.credit,
+          usedCredit: relation.usedCredit
+        }]
+      }
+    });
+  }
+
+  logger.error(`${ctrlNm}::addRegisteredChild::error. Duplicate relationship between user ${relation.parentId} and user ${relation.childId}`);
+  return res.json({
+    status: HttpCodeConstant.Error,
+    messages: ['Duplicate relationship'],
+    data: {meta: {}, entries: []}
+  });
+}
+
+/**
  * Api add an user to be own child
  * @param {Object} req
  * @param {Object} res
@@ -102,7 +188,12 @@ const addRegisteredChild = async (req, res, next) => {
     }
 
     const {userId} = req.body;
-    const targetUser = await UserModel.findById(userId);
+    const targetUser = await UserModel.findOne({
+      where: {
+        status: StatusConstant.Active,
+        id: userId
+      }
+    });
     if (!targetUser) {
       logger.error(`${ctrlNm}::addRegisteredChild::error. User not found`);
       return next('User not found');
@@ -113,13 +204,12 @@ const addRegisteredChild = async (req, res, next) => {
       return next(`Invalid child. That child is a company`);
     }
 
-    const isExistRelation = await URService.isExistRelation(req.user.id, userId);
-    if (isExistRelation) {
-      logger.error(`${ctrlNm}::addRegisteredChild::error. Duplicate relationship between user ${req.user.id} and user ${userId}`);
-      return next(new Error('Duplicate relationship'));
+    const relation = await URService.isExistRelation(req.user.id, userId);
+    if (relation) {
+      return await _handleAddRegisteredUserCaseExistsRelation(res, relation);
     }
 
-    if (!URService.isValidToBeChild(userId)) {
+    if (!await URService.isValidToBeChild(userId)) {
       logger.error(`${ctrlNm}::addRegisteredChild::error. Invalid target user. This user is a child of someone or is a parent of children.`);
       return next(new Error('Invalid target user. This user is a child of someone or is a parent of children.'));
     }

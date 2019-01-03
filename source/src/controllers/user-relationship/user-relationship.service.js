@@ -55,10 +55,16 @@ const getListChildren = async (userId, options) => {
   });
 };
 
+/**
+ * Check if target user can be child or not. If user is a ACTIVE child return false, if user is a ACTIVE parent return false, else true
+ * @param userId
+ * @return {Promise<boolean>}
+ */
 const isValidToBeChild = async (userId) => {
   const roleChildRelations = await UserRelationshipModel.findOne({
     where: {
       childId: userId,
+      status: StatusConstant.ChildAccepted,
       delFlag: GlobalConstant.DelFlag.False
     }
   });
@@ -66,6 +72,7 @@ const isValidToBeChild = async (userId) => {
   const roleParentRelation = await UserRelationshipModel.findOne({
     where: {
       parentId: userId,
+      status: StatusConstant.ChildAccepted,
       delFlag: GlobalConstant.DelFlag.False
     }
   });
@@ -90,20 +97,18 @@ async function createNewRelation(parentId, childId) {
 
 /**
  *
- * @param {number} parentId
- * @param {number} childId
- * @return {Promise<boolean>}
+ * @param parentId
+ * @param childId
+ * @return {Promise<UserRelationShipModel>}
  */
 async function isExistRelation(parentId, childId) {
-  const relation = await UserRelationshipModel.findOne({
+  return await UserRelationshipModel.findOne({
     where: {
       parentId,
       childId,
       delFlag: GlobalConstant.DelFlag.False
     }
   });
-
-  return !!relation;
 }
 
 /**

@@ -602,7 +602,7 @@ const findDetailByEmail = async (req, res, next) => {
         meta: {},
         entries: [{
           email: user.email,
-          name: user.name | '',
+          name: user.name || '',
           username: user.username,
           phone: user.phone,
           address: user.address,

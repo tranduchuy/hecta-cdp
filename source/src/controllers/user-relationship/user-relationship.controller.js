@@ -321,10 +321,10 @@ const addNewChild = async (req, res, next) => {
     }
 
     const newUserData = {
-      email: email,
-      password: password,
-      name: name,
-      username: username,
+      email,
+      password,
+      name,
+      username,
       phone: phone || null,
       address: address || null,
       gender: gender || null

@@ -380,14 +380,17 @@ const updateBalanceWhenBuyingSomething = (userId, cost, note, targetType) => {
     await balanceInstance.save();
     logger.info(`UserService::updateBalanceWhenBuyingSomething::update balance of user ${userId}`);
 
-    if (targetType === 'SALE') {
-      const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
-      logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
-    } else if (targetType === 'UP_NEWS') {
-      const t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
-      logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
+    try {
+      if (targetType === 'SALE') {
+        const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
+        logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
+      } else if (targetType === 'UP_NEWS') {
+        const t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
+        logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
+      }
+    } catch (e) {
+      return reject(e);
     }
-
 
     return resolve('Purchasing sale success');
   });

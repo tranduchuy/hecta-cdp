@@ -268,9 +268,14 @@ const updateInfo = async (req, res, next) => {
 
     const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type} = req.body;
     const {id} = req.params;
+    const isAdmin = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
+    if (isAdmin === false && req.user.id != id) {
+      logger.error(`UserController::updateInfo::error. User ${req.user.id} try to update info of user ${id}, but he's not ADMIN`);
+      return next(new Error('Permission denied'));
+    }
 
     // only admin or master can update status of user
-    const availableToUpdateStatus = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
+    const availableToUpdateStatus = isAdmin;
     if (!availableToUpdateStatus && status === undefined) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));

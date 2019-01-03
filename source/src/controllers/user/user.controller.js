@@ -313,7 +313,7 @@ const updateInfo = async (req, res, next) => {
     targetUser.address = address || targetUser.address;
     targetUser.phone = phone || targetUser.phone;
     targetUser.gender = gender || targetUser.gender;
-    targetUser.password = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
+    targetUser.passwordHash = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
     targetUser.type = type || targetUser.type;
     targetUser.status = isAdmin ? status : targetUser.status;
     await targetUser.save();

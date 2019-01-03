@@ -304,7 +304,7 @@ const updateInfo = async (req, res, next) => {
     if (password) {
       if (password !== confirmedPassword) {
         return next(new Error('Two password not same'));
-      } else if (!bcrypt.compareSync(oldPassword, targetUser.password)) {
+      } else if (!bcrypt.compareSync(oldPassword, targetUser.passwordHash)) {
         return next(new Error('Wrong old password'));
       }
     }

@@ -81,7 +81,7 @@ const login = async (req, res, next) => {
       type: user.type,
       balance: await UserService.getBalanceInfo(user.id)
     };
-    const token = UserService.generateToken(userInfoResponse);
+    const token = UserService.generateToken({email: user.email});
     logger.info(`UserController::login::success. User ${user.email} logged in`);
 
     return res.json({
@@ -309,20 +309,14 @@ const updateInfo = async (req, res, next) => {
       }
     }
 
-    const dataToUpdate = {
-      name: name || targetUser.user,
-      address: address || targetUser.address,
-      phone: phone || targetUser.phone,
-      gender: gender || targetUser.gender,
-      password: password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash,
-      type: type || targetUser.type,
-      status: isAdmin ? status : targetUser.status,
-      where: {
-        id: targetUser.id
-      }
-    };
-
-    await UserModel.update(dataToUpdate);
+    targetUser.name = name || targetUser.name;
+    targetUser.address = address || targetUser.address;
+    targetUser.phone = phone || targetUser.phone;
+    targetUser.gender = gender || targetUser.gender;
+    targetUser.password = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
+    targetUser.type = type || targetUser.type;
+    targetUser.status = isAdmin ? status : targetUser.status;
+    await targetUser.save();
     logger.info('UserController::updateInfo::success');
 
     return res.json({
@@ -537,7 +531,7 @@ const resetPassword = async (req, res, next) => {
 
     const {token, password, confirmedPassword} = req.body;
     if (password !== confirmedPassword) {
-      logger.error('UserController::register::error. 2 passwords not same');
+      logger.error('UserController::resetPassword::error. 2 passwords not same');
       return next(new Error('2 passwords not same'));
     }
 
@@ -548,12 +542,12 @@ const resetPassword = async (req, res, next) => {
     });
 
     if (!user) {
-      logger.warn('UserController::login::warn. User not found');
+      logger.warn('UserController::resetPassword::warn. User not found');
       return next(new Error('User not found'));
     }
 
     if (UserService.isExpiredTokenResetPassword(user.passwordReminderExpire)) {
-      logger.error(`UserController::login::error. Time's up. Please try forget password again`);
+      logger.error(`UserController::resetPassword::error. Time's up. Please try forget password again`);
       return next(new Error(`Time's up. Please try forget form again`));
     }
 

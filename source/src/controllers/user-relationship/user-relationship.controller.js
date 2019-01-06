@@ -531,7 +531,7 @@ const removeParent = async (req, res, next) => {
       return next(new Error('Relation is not exists'));
     }
 
-    await URService.doProcessGetBackParentMoney(req.query.childId, req.user.id, relation);
+    await URService.doProcessGetBackParentMoney(req.query.parentId, req.user.id, relation);
     relation.delFlag = GlobalConstant.DelFlag.True;
     await relation.save();
     logger.info(`${ctrlNm}::removeParent::success`);

@@ -215,7 +215,9 @@ const isExpiredTokenResetPassword = (expiredOn) => {
  */
 const updateMain1 = async (userId, amount) => {
   const balance = await BalanceModel.findOne({
-    userId
+    where: {
+      userId
+    }
   });
 
   balance.main1 = balance.main1 + amount;

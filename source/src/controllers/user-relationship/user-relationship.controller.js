@@ -382,9 +382,11 @@ const getDetailChild = async (req, res, next) => {
     }
 
     const relation = await URModel.findOne({
-      parentId: req.user.id,
-      childId: req.query.childId,
-      status: StatusConstant.ChildAccepted
+      where: {
+        parentId: req.user.id,
+        childId: req.query.childId,
+        status: StatusConstant.ChildAccepted
+      }
     });
 
     if (!relation) {

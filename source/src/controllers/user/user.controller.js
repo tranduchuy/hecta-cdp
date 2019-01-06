@@ -715,9 +715,11 @@ const shareBalanceToChild = async (req, res, next) => {
 
     // Check relation between parent and child
     const relation = await URModel.findOne({
-      parentId: req.user.id,
-      childId: childId,
-      status: StatusConstant.ChildAccepted
+      where: {
+        parentId: req.user.id,
+        childId: childId,
+        status: StatusConstant.ChildAccepted
+      }
     });
 
     if (!relation) {

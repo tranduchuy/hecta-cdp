@@ -10,5 +10,6 @@
  * @property {Function} belongsTo
  * @property {Function} hasMany
  * @property {Function} belongsToMany
+ * @property {Function} sum
  *
  * */

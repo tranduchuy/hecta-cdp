@@ -138,6 +138,12 @@ const getBalanceInfo = async (userId) => {
       result.credit = relation.credit;
       result.usedCredit = relation.usedCredit;
     }
+  } else {
+    result.sharedCredit = await UserRelationShipModel.sum('credit', {
+      where: {
+        parentId: userId
+      }
+    });
   }
 
   return result;

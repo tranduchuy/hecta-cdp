@@ -9,6 +9,7 @@ const UserCtrl = require('../controllers/user/user.controller');
 router.get('/confirm-email', UserCtrl.confirmRegister);
 router.get('/resend-confirm-email', UserCtrl.resendConfirmRegister);
 router.get('/info', UserCtrl.getInfoLoggedIn);
+router.get('/valid-token', UserCtrl.checkValidToken);
 router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
 router.get('/forget-password', UserCtrl.forgetPassword);
 router.get('/find-detail', UserCtrl.findDetailByEmail);

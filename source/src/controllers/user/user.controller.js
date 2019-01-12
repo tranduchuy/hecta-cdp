@@ -933,6 +933,17 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
   }
 };
 
+const checkValidToken = (req, res, next) => {
+  return res.json({
+    status: HttpCodeConstant.Success,
+    messages: [],
+    data: {
+      meta: {},
+      entries: []
+    }
+  });
+};
+
 module.exports = {
   login,
   register,
@@ -940,6 +951,7 @@ module.exports = {
   getInfoLoggedIn,
   updateInfo,
   checkDuplicateEmailOrUsername,
+  checkValidToken,
   resendConfirmRegister,
   forgetPassword,
   resetPassword,

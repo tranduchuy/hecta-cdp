@@ -606,6 +606,7 @@ const findDetailByEmail = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: user.id,
           role: user.role,
           email: user.email,
           name: user.name || '',

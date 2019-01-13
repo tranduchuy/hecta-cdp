@@ -68,7 +68,7 @@ const getListTransactionHistory = async (optionQuery, paginationOptions) => {
     include: [
       {
         model: UserModel,
-        as: 'fromUserInfo',
+        as: 'info',
         attributes: ['email', 'name', 'username', 'phone']
       }
     ],

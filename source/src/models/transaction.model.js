@@ -129,7 +129,7 @@ module.exports = Transaction;
 Transaction.belongsTo(UserModel, {
   foreignKey: 'fromUserId',
     constraints: false,
-    as: 'fromUserInfo'
+    as: 'info'
 });
 
 Transaction.belongsTo(UserModel, {

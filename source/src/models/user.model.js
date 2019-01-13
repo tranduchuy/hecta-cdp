@@ -14,7 +14,6 @@
  *  @property {string} address
  *  @property {string} phone
  *  @property {number} gender
- *  @property {number} age
  *  @property {number} role
  *  @property {number} city
  *  @property {number} district
@@ -94,10 +93,6 @@ const userSchema = {
   gender: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'GENDER'
-  },
-  age: {
-    type: Sequelize.DataTypes.INTEGER,
-    field: 'AGE'
   },
   role: {
     type: Sequelize.DataTypes.INTEGER,

@@ -54,9 +54,15 @@ const isValidHashPassword = (hashed, plainText) => {
  * @param name
  * @param username
  * @param phone
+ * @param address
+ * @param city
+ * @param district
+ * @param ward
+ * @param gender
+ * @param Date birthday
  * @returns {Promise<this|Errors.ValidationError>|*|void}
  */
-const createUser = async ({email, password, type, name, username, phone}) => {
+const createUser = async ({email, password, type, name, username, phone, address, city, district, ward, gender, birthday}) => {
   const salt = bcrypt.genSaltSync(UserConstant.saltLength);
   const tokenEmailConfirm = RandomString.generate({
     length: UserConstant.tokenConfirmEmailLength,
@@ -72,7 +78,13 @@ const createUser = async ({email, password, type, name, username, phone}) => {
     username,
     phone,
     tokenEmailConfirm,
-    status: StatusConstant.PendingOrWaitConfirm
+    status: StatusConstant.PendingOrWaitConfirm,
+    address: address || '',
+    city: city || null,
+    district: district || null,
+    ward: ward || null,
+    gender: gender || gender,
+    birthday: birthday || new Date()
   });
 
   return await newUser.save();

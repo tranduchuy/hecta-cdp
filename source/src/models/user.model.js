@@ -105,12 +105,16 @@ const userSchema = {
     defaultValue: UserRoleConstant.EndUser
   },
   city: {
-    type: Sequelize.DataTypes.INTEGER,
+    type: Sequelize.DataTypes.STRING,
     field: 'CITY'
   },
   district: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'DISTRICT'
+  },
+  ward: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'WARD'
   },
   avatar: {
     type: Sequelize.DataTypes.TEXT,

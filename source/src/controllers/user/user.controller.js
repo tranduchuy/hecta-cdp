@@ -122,7 +122,8 @@ const register = async (req, res, next) => {
       });
     }
 
-    const {email, password, confirmedPassword, name, username, phone} = req.body;
+    const {email, password, confirmedPassword,
+      name, username, phone, address, gender, city, district, ward} = req.body;
     if (password !== confirmedPassword) {
       logger.error('UserController::register::error. 2 passwords not same');
       return next(new Error('2 passwords not same'));
@@ -153,7 +154,7 @@ const register = async (req, res, next) => {
       messages: ['Success'],
       data: {
         meta: {},
-        entries: [{email, name, username, phone}]
+        entries: [{email, name, username, phone, address, gender, city, district, ward}]
       }
     });
   } catch (e) {

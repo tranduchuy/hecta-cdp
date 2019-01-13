@@ -23,6 +23,15 @@ module.exports = {
       type: 'string',
       maxLength: 200
     },
+    city: {
+      type: 'string'
+    },
+    district: {
+      type: 'number'
+    },
+    ward: {
+      type: 'number'
+    },
     gender: {
       enum: [GenderConstant.Male, GenderConstant.Female]
     },

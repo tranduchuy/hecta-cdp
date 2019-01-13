@@ -644,14 +644,22 @@ const getHighlightUser = async (req, res, next) => {
       },
       limit: 10
     });
+
     const resultUsers = users.map(u => {
       return {
+        id: u.id,
         email: u.email,
         username: u.username,
         name: u.name,
         avatar: u.avatar,
         phone: u.phone,
-        gender: u.gender
+        address: u.address,
+        type: u.type,
+        city: u.city,
+        district: u.district,
+        ward: u.ward,
+        gender: u.gender,
+        birthday: user.birthday
       }
     });
 

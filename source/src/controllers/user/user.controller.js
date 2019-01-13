@@ -73,6 +73,7 @@ const login = async (req, res, next) => {
 
     const userInfoResponse = {
       id: user.id,
+      role: user.role,
       email: user.email,
       username: user.username,
       name: user.name,
@@ -226,6 +227,7 @@ const getInfoLoggedIn = async (req, res, next) => {
   try {
     const userInfoResponse = {
       id: req.user.id,
+      role: req.user.role,
       email: req.user.email,
       username: req.user.username,
       name: req.user.name,
@@ -583,7 +585,10 @@ const findDetailByEmail = async (req, res, next) => {
     const user = await UserModel.findOne({
       where: {
         email: req.query.email,
-        status: StatusConstant.Active
+        status: StatusConstant.Active,
+        role: {
+          [Sequelize.Op.notIn]: [UserRoleConstant.Admin, UserRoleConstant.Master]
+        }
       }
     });
 
@@ -599,6 +604,7 @@ const findDetailByEmail = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          role: user.role,
           email: user.email,
           name: user.name || '',
           username: user.username,

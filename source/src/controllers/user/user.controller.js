@@ -80,6 +80,7 @@ const login = async (req, res, next) => {
       phone: user.phone,
       address: user.address,
       type: user.type,
+      status: user.status,
       balance: await UserService.getBalanceInfo(user.id)
     };
     const token = UserService.generateToken({email: user.email});

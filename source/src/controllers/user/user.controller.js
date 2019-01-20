@@ -265,17 +265,20 @@ const updateInfo = async (req, res, next) => {
   try {
     const errors = AJV(updateInfoSchema, req.body);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
-    const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type} = req.body;
-    const {id} = req.params;
+    const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
+    city, district, ward} = req.body;
+    let {id} = req.params;
+    if (isNaN(id)) {
+      return next(new Error('Id must be a number'));
+    } else {
+      id = parseInt(id, 0);
+    }
+
     const isAdmin = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
-    if (isAdmin === false && req.user.id != id) {
+    if (isAdmin === false && req.user.id !== id) {
       logger.error(`UserController::updateInfo::error. User ${req.user.id} try to update info of user ${id}, but he's not ADMIN`);
       return next(new Error('Permission denied'));
     }
@@ -297,11 +300,7 @@ const updateInfo = async (req, res, next) => {
       if (errors.length !== 0) {
         logger.error('UserController::updateInfo::error', errors.join('\n'));
 
-        return res.json({
-          status: HttpCodeConstant.Error,
-          messages: errors,
-          data: {meta: {},entries: []}
-        });
+        return next(new Error(errors.join('\n')));
       }
     }
 
@@ -316,6 +315,9 @@ const updateInfo = async (req, res, next) => {
     targetUser.name = name || targetUser.name;
     targetUser.address = address || targetUser.address;
     targetUser.phone = phone || targetUser.phone;
+    targetUser.city = city || targetUser.city;
+    targetUser.district = district || targetUser.district;
+    targetUser.ward = ward || targetUser.ward;
     targetUser.gender = gender || targetUser.gender;
     targetUser.passwordHash = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
     targetUser.type = type || targetUser.type;
@@ -329,13 +331,19 @@ const updateInfo = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: targetUser.id,
           email: targetUser.email,
           name: targetUser.name,
           username: targetUser.username,
           phone: targetUser.phone,
           address: targetUser.address,
           gender: targetUser.gender,
-          type: targetUser.type
+          type: targetUser.type,
+          city: targetUser.city,
+          district: targetUser.district,
+          ward: targetUser.ward,
+          birthday: targetUser.birthday,
+          avatar: targetUser.avatar
         }]
       }
     });

@@ -1,4 +1,5 @@
 const UserTypeConstant = require('../../../constants/user-type.constant');
+const GenderConstant = require('../../../constants/gender.constant');
 const StatusConstant = require('../../../constants/status.constant');
 
 module.exports = {
@@ -27,7 +28,7 @@ module.exports = {
       ]
     },
     gender: {
-      type: 'integer'
+      enum: [GenderConstant.Female, GenderConstant.Male]
     },
     oldPassword: {
       type: 'string',
@@ -43,6 +44,15 @@ module.exports = {
     },
     type: {
       enum: [UserTypeConstant.Company, UserTypeConstant.Personal]
+    },
+    city: {
+      type: 'number'
+    },
+    district: {
+      type: 'number'
+    },
+    ward: {
+      type: 'number'
     }
   },
   required: [],

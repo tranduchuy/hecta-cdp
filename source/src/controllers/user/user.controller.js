@@ -230,6 +230,7 @@ const getInfoLoggedIn = async (req, res, next) => {
     const userInfoResponse = {
       id: req.user.id,
       role: req.user.role,
+      type: req.user.type,
       email: req.user.email,
       username: req.user.username,
       name: req.user.name,

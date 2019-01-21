@@ -4,6 +4,7 @@ const express = require('express');
  */
 const router = express.Router({});
 const UserCtrl = require('../controllers/user/user.controller');
+const AdminMiddleware = require('../middlewares/check-admin-login');
 
 // GET
 router.get('/confirm-email', UserCtrl.confirmRegister);
@@ -14,6 +15,7 @@ router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
 router.get('/forget-password', UserCtrl.forgetPassword);
 router.get('/find-detail', UserCtrl.findDetailByEmail);
 router.get('/highlight', UserCtrl.getHighlightUser);
+router.get('/', AdminMiddleware, UserCtrl.getList);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);

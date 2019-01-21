@@ -458,6 +458,54 @@ const addTransactionCostOfNews = async (userId, amount, note, before, after) => 
   return await newTransaction.save();
 };
 
+/**
+ *
+ * @param {{page: number, limit: number}} pagination
+ * @param {{sortBy: string, sd: string}} sort
+ * @param query
+ * @return {Promise<void>}
+ */
+const getListUser = async (pagination, sort, query) => {
+  const _query = {};
+
+  Object.keys(query).forEach(prop => {
+    if (isSearchLikeProperty(prop)) {
+      _query[prop] = {
+        [Sequelize.Op.like]: `%${query[prop]}%`
+      };
+    } else if (isSearchExactProperty(prop)) {
+      _query[prop] = query[prop];
+    }
+  });
+
+  return await UserModel.findAndCountAll({
+    where: _query,
+    offset: (pagination.page - 1) * pagination.limit,
+    limit: pagination.limit,
+    order: [
+      [sort.sortBy, sort.sd.toUpperCase()]
+    ]
+  });
+};
+
+/**
+ *
+ * @param propertyNm
+ * @return {boolean}
+ */
+const isSearchLikeProperty = (propertyNm) => {
+  return UserConstant.queryProperties.like.some(q => q === propertyNm);
+};
+
+/**
+ *
+ * @param propertyNm
+ * @return {boolean}
+ */
+const isSearchExactProperty = (propertyNm) => {
+  return UserConstant.queryProperties.exactly.some(q => q === propertyNm);
+};
+
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
@@ -470,6 +518,7 @@ module.exports = {
   generateToken,
   getBalanceInfo,
   getBalanceInstance,
+  getListUser,
   findByEmailOrUsername,
   isExpiredTokenResetPassword,
   isValidHashPassword,

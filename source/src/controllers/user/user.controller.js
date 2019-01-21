@@ -14,8 +14,10 @@ const logger = log4js.getLogger('Controllers');
 const AJV = require('../../core/ajv');
 const MailService = require('../../services/mailer.service');
 const Sequelize = require('sequelize');
+const {extractPaginationCondition} = require('../../services/request.service');
 
 // constants
+const UserConstant = require('./user.constant');
 const StatusConstant = require('../../constants/status.constant');
 const UserRoleConstant = require('../../constants/user-role.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
@@ -33,6 +35,7 @@ const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-ema
 const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
 const updateBalanceSchema = require('./validation-schemas/update-balance.schema');
 const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance-by-sale-cost.schema');
+const getListSchema = require('./validation-schemas/get-list.schema');
 
 /**
  *
@@ -933,11 +936,7 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
     // using same schema with function updateBalanceSaleCost
     const errors = AJV(updateBalanceSaleCostSchema, req.body);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
     const {cost, note} = req.body;
@@ -959,7 +958,7 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
   }
 };
 
-const checkValidToken = (req, res, next) => {
+const checkValidToken = async (req, res, next) => {
   return res.json({
     status: HttpCodeConstant.Success,
     messages: [],
@@ -970,11 +969,79 @@ const checkValidToken = (req, res, next) => {
   });
 };
 
+const getList = async (req, res, next) => {
+  logger.info('UserController::getList::called');
+
+  try {
+    const errors = AJV(getListSchema, req.query);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const paginationCond = extractPaginationCondition(req);
+    const sortCond = {sd: 'ASC', sortBy: 'id'};
+    if (req.query.sortBy && UserConstant.availableSortPropertiesForAdmin.indexOf(req.query.sortBy) !== -1) {
+      sortCond.sortBy = req.query.sortBy;
+    }
+
+    if (req.query.sd && (req.query.sd.toUpperCase() === 'ASC' || req.query.sd.toUpperCase() === 'DESC')) {
+      sortCond.sd = req.query.sd.toUpperCase();
+    }
+
+    const query = {};
+    ['name', 'username', 'email', 'phone', 'type', 'city', 'district', 'ward', 'phone'].forEach(p => {
+      if (req.query[p] && req.query[p].toString().trim() !== '') {
+        query[p] = req.query[p].toString().trim();
+      }
+    });
+
+    const result = await UserService.getListUser(paginationCond, sortCond, query);
+    logger.info('UserController::getList::success');
+
+    const users = result.rows.map(r => {
+      return {
+        "id": r.id,
+        "email": r.email,
+        "username": r.username,
+        "name": r.name,
+        "createdAt": r.createdAt,
+        "updatedAt": r.updatedAt,
+        "address": r.address,
+        "phone": r.phone,
+        "gender": r.gender,
+        "role": r.role,
+        "city": r.city,
+        "district": r.district,
+        "ward": r.ward,
+        "avatar": r.avatar,
+        "birthday": r.birthday,
+        "type": r.type,
+        "status": r.status
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {
+          totalItems: result.count
+        },
+        entries: users
+      }
+    })
+  } catch (e) {
+    logger.error('UserController::getList::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
   getInfoLoggedIn,
+  getList,
   updateInfo,
   checkDuplicateEmailOrUsername,
   checkValidToken,

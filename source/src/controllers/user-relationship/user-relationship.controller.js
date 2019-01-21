@@ -437,7 +437,15 @@ const listRequest = async (req, res, next) => {
     const relations = await URModel.findAll({
       where: {
         childId: req.user.id
-      }
+      },
+      attributes: ['id', 'status', 'delFlag'],
+      include: [
+        {
+          model: UserModel,
+          as: 'parentInfo',
+          attributes: ['id', 'name', 'username', 'email']
+        }
+      ]
     });
     logger.info(`${ctrlNm}::listRequest::success`);
 

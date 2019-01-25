@@ -877,8 +877,11 @@ const updateBalance = async (req, res, next) => {
       status: HttpCodeConstant.Success,
       messages: ['Success'],
       data: {
-        meta: {},
-        entries: [aBalanceInfo]
+        meta: {
+          before: bBalanceInfo,
+          after: aBalanceInfo
+        },
+        entries: []
       }
     });
   } catch (e) {

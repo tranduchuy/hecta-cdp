@@ -316,7 +316,13 @@ const addNewChild = async (req, res, next) => {
       });
     }
 
-    const {name, username, email, password, confirmedPassword, phone, gender, address} = req.body;
+    const {name, username, email, password, confirmedPassword, phone, gender, address, city, district, ward, birthday} = req.body;
+    const duplicatedUsers = await UserModel.findAll({where: {email}});
+    if (duplicatedUsers.length !== 0) {
+      logger.error('UserController::register::error. Duplicate email');
+      return next(new Error('Duplicate email'));
+    }
+
     if (password !== confirmedPassword) {
       logger.error(`${ctrlNm}::addNewChild::error. 2 password not same`);
       return next(new Error('2 password not same'));
@@ -327,11 +333,18 @@ const addNewChild = async (req, res, next) => {
       password,
       name,
       username,
+      city: city || null,
+      district: district || null,
+      ward: ward || null,
       phone: phone || null,
       address: address || null,
-      gender: gender || null
+      gender: gender || null,
+      birthday: null
     };
 
+    if (birthday) {
+      newUserData.birthday = new Date(birthday || '');
+    }
     // create user, child should confirm email
     const newChild = await URService.registerNewChild(newUserData);
     // create user balance
@@ -351,6 +364,7 @@ const addNewChild = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: newRelation.id,
           parentId: newRelation.parentId,
           childId: newRelation.childId,
           credit: newRelation.credit,

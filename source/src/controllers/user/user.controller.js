@@ -125,8 +125,9 @@ const register = async (req, res, next) => {
       });
     }
 
-    const {email, password, confirmedPassword,
+    const {email, password, confirmedPassword, birthday,
       name, username, phone, address, gender, city, district, ward} = req.body;
+
     if (password !== confirmedPassword) {
       logger.error('UserController::register::error. 2 passwords not same');
       return next(new Error('2 passwords not same'));
@@ -138,7 +139,25 @@ const register = async (req, res, next) => {
       return next(new Error('Duplicate email'));
     }
 
-    const newUser = await UserService.createUser(req.body);
+    const newUserData = {
+      email,
+      username,
+      name,
+      password,
+      birthday: null,
+      phone: phone || null,
+      gender: gender || null,
+      city: city || null,
+      district: district || null,
+      ward: ward || null,
+      address
+    };
+
+    if (birthday) {
+      newUserData.birthday = new Date(birthday || '');
+    }
+
+    const newUser = await UserService.createUser(newUserData);
     await UserService.createBalanceInfo(newUser.id);
 
     // nếu là admin tạo thì ko cần gửi email, và mặc định là active sẵn

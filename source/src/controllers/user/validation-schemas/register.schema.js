@@ -46,6 +46,11 @@ module.exports = {
     username: {
       type: 'string',
       minLength: 6
+    },
+    birthday: {
+      type: 'string',
+      maxLength: 10,
+      minLength: 10
     }
   },
   required: ['email', 'password', 'confirmedPassword', 'type', 'username', 'name']

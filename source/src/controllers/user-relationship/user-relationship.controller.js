@@ -285,6 +285,7 @@ const replyRequest = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: relation.id,
           parentId: relation.parentId,
           childId: relation.childId,
           credit: relation.credit,

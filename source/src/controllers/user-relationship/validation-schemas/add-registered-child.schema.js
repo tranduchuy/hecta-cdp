@@ -5,5 +5,5 @@ module.exports = {
       type: 'integer'
     },
   },
-  required: []
+  required: ['userId']
 };

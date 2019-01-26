@@ -223,6 +223,8 @@ const addRegisteredChild = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: newRelation.id,
+          status: newRelation.status,
           parentId: newRelation.parentId,
           childId: newRelation.childId,
           credit: newRelation.credit,

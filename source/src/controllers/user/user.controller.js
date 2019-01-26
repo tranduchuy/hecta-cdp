@@ -918,7 +918,7 @@ const updateBalance = async (req, res, next) => {
  */
 const updateBalanceSaleCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceSaleCost::called`);
-  // TODO: note property should include sale_id (mongo id)
+  // TODO: note property should include post id (mongo id)
 
   try {
     const errors = AJV(updateBalanceSaleCostSchema, req.body);

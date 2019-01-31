@@ -493,14 +493,11 @@ const removeChild = async (req, res, next) => {
   try {
     const errors = AJV(removeChildSchema, req.query);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
-    const child = await UserModel.findById(req.query.childId);
+    const childId = parseInt(req.query.childId);
+    const child = await UserModel.findById(childId);
     if (!child) {
       logger.error(`${ctrlNm}::removeChild::error. Child not found. User id ${req.query.childId}`);
       return next(new Error('Account child not found'));
@@ -522,7 +519,7 @@ const removeChild = async (req, res, next) => {
       messages: ['Success'],
       data: {
         meta: {balance: aParentBalance},
-        entries: {}
+        entries: [relation]
       }
     });
   } catch (e) {

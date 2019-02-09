@@ -506,6 +506,13 @@ const isSearchExactProperty = (propertyNm) => {
   return UserConstant.queryProperties.exactly.some(q => q === propertyNm);
 };
 
+const mapBalanceInfoToListUser = async (users) => {
+  return await Promise.all(users.map(async (user) => {
+    user.balance = await getBalanceInfo(user.id);
+    return user;
+  }));
+};
+
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
@@ -523,6 +530,7 @@ module.exports = {
   isExpiredTokenResetPassword,
   isValidHashPassword,
   isValidUpdateType,
+  mapBalanceInfoToListUser,
   updateMain1,
   updateBalanceWhenBuyingSomething
 };

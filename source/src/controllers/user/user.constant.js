@@ -15,6 +15,6 @@ module.exports = {
   ],
   queryProperties: {
     like: ['name', 'username', 'email', 'phone'],
-    exactly: ['city', 'district', 'ward', 'type', 'gender']
+    exactly: ['city', 'district', 'ward', 'type', 'gender', 'role']
   }
 };

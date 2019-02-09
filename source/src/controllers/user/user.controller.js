@@ -125,8 +125,10 @@ const register = async (req, res, next) => {
       });
     }
 
-    const {email, password, confirmedPassword, birthday,
-      name, username, phone, address, gender, city, district, ward} = req.body;
+    const {
+      email, password, confirmedPassword, birthday,
+      name, username, phone, address, gender, city, district, ward
+    } = req.body;
 
     if (password !== confirmedPassword) {
       logger.error('UserController::register::error. 2 passwords not same');
@@ -291,8 +293,10 @@ const updateInfo = async (req, res, next) => {
       return next(new Error(errors.join('\n')));
     }
 
-    const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
-    city, district, ward} = req.body;
+    const {
+      name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
+      city, district, ward
+    } = req.body;
     let {id} = req.params;
     if (isNaN(id)) {
       return next(new Error('Id must be a number'));
@@ -1006,12 +1010,13 @@ const getList = async (req, res, next) => {
       sortCond.sortBy = req.query.sortBy;
     }
 
-    if (req.query.sd && (req.query.sd.toUpperCase() === 'ASC' || req.query.sd.toUpperCase() === 'DESC')) {
-      sortCond.sd = req.query.sd.toUpperCase();
+    const inputSd = (req.query.sd || '').toUpperCase();
+    if (req.query.sd && (inputSd === 'ASC' || inputSd === 'DESC')) {
+      sortCond.sd = inputSd;
     }
 
     const query = {};
-    ['name', 'username', 'email', 'phone', 'type', 'city', 'district', 'ward', 'phone'].forEach(p => {
+    ['name', 'username', 'email', 'phone', 'type', 'city', 'district', 'ward', 'phone', 'role'].forEach(p => {
       if (req.query[p] && req.query[p].toString().trim() !== '') {
         query[p] = req.query[p].toString().trim();
       }
@@ -1020,27 +1025,29 @@ const getList = async (req, res, next) => {
     const result = await UserService.getListUser(paginationCond, sortCond, query);
     logger.info('UserController::getList::success');
 
-    const users = result.rows.map(r => {
+    let users = result.rows.map(r => {
       return {
-        "id": r.id,
-        "email": r.email,
-        "username": r.username,
-        "name": r.name,
-        "createdAt": r.createdAt,
-        "updatedAt": r.updatedAt,
-        "address": r.address,
-        "phone": r.phone,
-        "gender": r.gender,
-        "role": r.role,
-        "city": r.city,
-        "district": r.district,
-        "ward": r.ward,
-        "avatar": r.avatar,
-        "birthday": r.birthday,
-        "type": r.type,
-        "status": r.status
+        'id': r.id,
+        'email': r.email,
+        'username': r.username,
+        'name': r.name,
+        'createdAt': r.createdAt,
+        'updatedAt': r.updatedAt,
+        'address': r.address,
+        'phone': r.phone,
+        'gender': r.gender,
+        'role': r.role,
+        'city': r.city,
+        'district': r.district,
+        'ward': r.ward,
+        'avatar': r.avatar,
+        'birthday': r.birthday,
+        'type': r.type,
+        'status': r.status
       }
     });
+
+    users = await UserService.mapBalanceInfoToListUser(users);
 
     return res.json({
       status: HttpCodeConstant.Success,

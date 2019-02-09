@@ -36,6 +36,7 @@ const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
 const updateBalanceSchema = require('./validation-schemas/update-balance.schema');
 const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance-by-sale-cost.schema');
 const getListSchema = require('./validation-schemas/get-list.schema');
+const getListAdminSchema = require('./validation-schemas/get-list-admin.schema');
 
 /**
  *
@@ -956,7 +957,7 @@ const updateBalanceSaleCost = async (req, res, next) => {
 
 const updateBalanceUpNewsCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceUpNewsCost::called`);
-  // TODO: note property should include sale_id (mongo id)
+  // note property should include sale_id (mongo id)
 
   try {
     // using same schema with function updateBalanceSaleCost
@@ -993,6 +994,78 @@ const checkValidToken = async (req, res, next) => {
       entries: []
     }
   });
+};
+
+const getListAdmin = async (req, res, next) => {
+  logger.info('UserController::getListAdmin::called');
+
+  try {
+    const errors = AJV(getListAdminSchema, req.query);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const paginationCond = extractPaginationCondition(req);
+    const sortCond = {sd: 'ASC', sortBy: 'id'};
+    if (req.query.sortBy && UserConstant.availableSortPropertiesForAdmin.indexOf(req.query.sortBy) !== -1) {
+      sortCond.sortBy = req.query.sortBy;
+    }
+
+    const inputSd = (req.query.sd || '').toUpperCase();
+    if (req.query.sd && (inputSd === 'ASC' || inputSd === 'DESC')) {
+      sortCond.sd = inputSd;
+    }
+
+    const query = {};
+    ['name', 'username', 'email', 'phone', 'phone'].forEach(p => {
+      if (req.query[p] && req.query[p].toString().trim() !== '') {
+        query[p] = req.query[p].toString().trim();
+      }
+    });
+
+    query.role = {
+      [Sequelize.Op.in]: [UserRoleConstant.Admin, UserRoleConstant.Master]
+    };
+
+    const result = await UserService.getListUser(paginationCond, sortCond, query);
+    logger.info('UserController::getList::success');
+
+    let users = result.rows.map(r => {
+      return {
+        'id': r.id,
+        'email': r.email,
+        'username': r.username,
+        'name': r.name,
+        'createdAt': r.createdAt,
+        'updatedAt': r.updatedAt,
+        'address': r.address,
+        'phone': r.phone,
+        'gender': r.gender,
+        'role': r.role,
+        'city': r.city,
+        'district': r.district,
+        'ward': r.ward,
+        'avatar': r.avatar,
+        'birthday': r.birthday,
+        'type': r.type,
+        'status': r.status
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {
+          totalItems: result.count
+        },
+        entries: users
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getListAdmin::error', e);
+    return next(e);
+  }
 };
 
 const getList = async (req, res, next) => {
@@ -1058,7 +1131,7 @@ const getList = async (req, res, next) => {
         },
         entries: users
       }
-    })
+    });
   } catch (e) {
     logger.error('UserController::getList::error', e);
     return next(e);
@@ -1071,6 +1144,7 @@ module.exports = {
   confirmRegister,
   getInfoLoggedIn,
   getList,
+  getListAdmin,
   updateInfo,
   checkDuplicateEmailOrUsername,
   checkValidToken,

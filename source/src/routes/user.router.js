@@ -16,6 +16,7 @@ router.get('/forget-password', UserCtrl.forgetPassword);
 router.get('/find-detail', UserCtrl.findDetailByEmail);
 router.get('/highlight', UserCtrl.getHighlightUser);
 router.get('/', AdminMiddleware, UserCtrl.getList);
+router.get('/admin', AdminMiddleware, UserCtrl.getListAdmin);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);

@@ -24,6 +24,7 @@ router.put('/:id', UserCtrl.updateInfo);
 // POST
 router.post('/login', UserCtrl.login);
 router.post('/register', UserCtrl.register);
+router.post('/register-admin', AdminMiddleware, UserCtrl.registerAdmin); // TODO: should only master can create new admin
 router.post('/reset-password', UserCtrl.resetPassword);
 router.post('/share-credit', UserCtrl.shareBalanceToChild);
 router.post('/balance', UserCtrl.updateBalance);

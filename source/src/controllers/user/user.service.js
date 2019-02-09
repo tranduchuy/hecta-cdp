@@ -23,6 +23,7 @@ const moment = require('moment');
 const randomString = require('randomstring');
 
 // constant files
+const UserRoleConstant = require('../../constants/user-role.constant');
 const UserConstant = require('./user.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
 const RandomString = require('randomstring');
@@ -62,7 +63,7 @@ const isValidHashPassword = (hashed, plainText) => {
  * @param Date birthday
  * @returns {Promise<this|Errors.ValidationError>|*|void}
  */
-const createUser = async ({email, password, type, name, username, phone, address, city, district, ward, gender, birthday}) => {
+const createUser = async ({email, password, type, name, username, phone, address, city, district, ward, gender, birthday, role}) => {
   const salt = bcrypt.genSaltSync(UserConstant.saltLength);
   const tokenEmailConfirm = RandomString.generate({
     length: UserConstant.tokenConfirmEmailLength,
@@ -83,8 +84,9 @@ const createUser = async ({email, password, type, name, username, phone, address
     city: city || null,
     district: district || null,
     ward: ward || null,
-    gender: gender || gender,
-    birthday: birthday || new Date()
+    gender: gender || null,
+    birthday: birthday || new Date(),
+    role: role || UserRoleConstant.EndUser
   });
 
   return await newUser.save();

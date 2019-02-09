@@ -37,6 +37,7 @@ const updateBalanceSchema = require('./validation-schemas/update-balance.schema'
 const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance-by-sale-cost.schema');
 const getListSchema = require('./validation-schemas/get-list.schema');
 const getListAdminSchema = require('./validation-schemas/get-list-admin.schema');
+const registerAdminSchema = require('./validation-schemas/register-admin.schema');
 
 /**
  *
@@ -1138,6 +1139,68 @@ const getList = async (req, res, next) => {
   }
 };
 
+const registerAdmin = async (req, res, next) => {
+  logger.info('UserController::registerAdmin::called');
+
+  try {
+    const errors = AJV(registerAdminSchema, req.body);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const {
+      email, password, confirmedPassword, name, username, phone
+    } = req.body;
+
+    if (password !== confirmedPassword) {
+      logger.error('UserController::registerAdmin::error. 2 passwords not same');
+      return next(new Error('2 passwords not same'));
+    }
+
+    const duplicatedUsers = await UserModel.findAll({where: {email}});
+    if (duplicatedUsers.length !== 0) {
+      logger.error('UserController::registerAdmin::error. Duplicate email');
+      return next(new Error('Duplicate email'));
+    }
+
+    const newUserData = {
+      email,
+      username,
+      name,
+      password,
+      phone: phone,
+      type: UserTypeConstant.Personal,
+      role: UserRoleConstant.Admin
+    };
+
+    const newUser = await UserService.createUser(newUserData);
+    await UserService.createBalanceInfo(newUser.id);
+
+    // nếu là admin tạo thì ko cần gửi email, và mặc định là active sẵn
+    if (req.user && [UserRoleConstant.Master, UserRoleConstant.Admin].some(r => r === req.user.role)) {
+      newUser.status = StatusConstant.Active;
+      newUser.tokenEmailConfirm = '';
+      await newUser.save();
+    } else {
+      // Send email
+      MailService.sendConfirmEmail(email, newUser.tokenEmailConfirm);
+    }
+
+    logger.info(`UserController::registerAdmin::success. Email: ${email}`);
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{email, name, username, phone, id: newUser.id}]
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::registerAdmin::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -1145,6 +1208,7 @@ module.exports = {
   getInfoLoggedIn,
   getList,
   getListAdmin,
+  registerAdmin,
   updateInfo,
   checkDuplicateEmailOrUsername,
   checkValidToken,

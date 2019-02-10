@@ -9,8 +9,9 @@ const Sequelize = require('sequelize');
  * @property {number} main1
  * @property {number} main2
  * @property {number} promo
- * @property {date} createdAt
- * @property {date} updatedAt
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ * @property {Date} expiredAt
  * @property {number} userId
  *
  * @typedef {Model & BalanceCols} BalanceModel
@@ -56,6 +57,11 @@ const balanceSchema = {
       model: UserModel,
       key: 'id'
     }
+  },
+  expiredAt: {
+    type: Sequelize.DataTypes.DATE,
+    field: 'EXPIRED_AT',
+    defaultValue: null
   }
 };
 

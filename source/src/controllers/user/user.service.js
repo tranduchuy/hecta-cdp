@@ -134,7 +134,8 @@ const getBalanceInfo = async (userId) => {
   const result = {
     main1: balance.main1,
     main2: balance.main2,
-    promo: balance.promo
+    promo: balance.promo,
+    expiredAt: balance.expiredAt
   };
 
   if (user.type === UserTypeConstant.Personal) {
@@ -368,6 +369,7 @@ const getTotalAmountOfWallets = ({main1, promo, credit}) => {
 };
 
 const updateBalanceWhenBuyingSomething = (userId, cost, note, targetType) => {
+  // TODO: check expired using balance
   return new Promise(async (resolve, reject) => {
     const relation = await UserRelationShipModel.findOne({
       where: {

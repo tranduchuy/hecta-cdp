@@ -53,6 +53,9 @@ module.exports = {
     },
     ward: {
       type: 'number'
+    },
+    expirationDate: {
+      type: 'number'
     }
   },
   required: [],

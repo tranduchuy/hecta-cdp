@@ -298,7 +298,7 @@ const updateInfo = async (req, res, next) => {
 
     const {
       name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
-      city, district, ward
+      city, district, ward, expirationDate
     } = req.body;
     let {id} = req.params;
     if (isNaN(id)) {
@@ -342,6 +342,17 @@ const updateInfo = async (req, res, next) => {
         return next(new Error('Two password not same'));
       } else if (!bcrypt.compareSync(oldPassword, targetUser.passwordHash)) {
         return next(new Error('Wrong old password'));
+      }
+    }
+
+    if (isAdmin && expirationDate) {
+      const balanceInstance = await UserService.getBalanceInstance(targetUser.id);
+      if (!balanceInstance) {
+        return next(new Error(''));
+      } else {
+        const time = parseInt(expirationDate, 0);
+        balanceInstance.expiredAt = new Date(time);
+        await balanceInstance.save();
       }
     }
 
@@ -784,6 +795,8 @@ const shareBalanceToChild = async (req, res, next) => {
       logger.error(`UserController::shareBalanceToChild::error. Relation is not exist between ${req.user.id}, ${childId} with status ${StatusConstant.ChildAccepted}`);
       return next(new Error('You and that account have no real relation ship'));
     }
+
+    // TODO: check expired using balance
 
     const childBalanceInfo = await UserService.getBalanceInfo(childId);
     const afterParentBalance = await UserService.updateMain1(req.user.id, -amount);

@@ -38,6 +38,7 @@ const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance
 const getListSchema = require('./validation-schemas/get-list.schema');
 const getListAdminSchema = require('./validation-schemas/get-list-admin.schema');
 const registerAdminSchema = require('./validation-schemas/register-admin.schema');
+const updateStatusAdminSchema = require('./validation-schemas/update-status-admin.schema');
 
 /**
  *
@@ -1201,6 +1202,37 @@ const registerAdmin = async (req, res, next) => {
   }
 };
 
+const updateStatusAdmin = async (req, res, next) => {
+  logger.info('UserController::updateStatusAdmin::called');
+  try {
+    const errors = AJV(updateStatusAdminSchema, req.body);
+    if (errors.length > 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const admin = await UserService.findById(req.params.adminId);
+    if (!admin) {
+      return next(new Error('Admin not found'));
+    }
+
+    admin.status = req.body.status;
+    await admin.save();
+    logger.info('UserController::updateStatusAdmin::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: []
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::updateStatusAdmin::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -1210,6 +1242,7 @@ module.exports = {
   getListAdmin,
   registerAdmin,
   updateInfo,
+  updateStatusAdmin,
   checkDuplicateEmailOrUsername,
   checkValidToken,
   resendConfirmRegister,

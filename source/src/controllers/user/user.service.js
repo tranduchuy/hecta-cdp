@@ -515,6 +515,10 @@ const mapBalanceInfoToListUser = async (users) => {
   }));
 };
 
+const findById = async (userId) => {
+  return await UserModel.findById(userId);
+};
+
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
@@ -529,6 +533,7 @@ module.exports = {
   getBalanceInstance,
   getListUser,
   findByEmailOrUsername,
+  findById,
   isExpiredTokenResetPassword,
   isValidHashPassword,
   isValidUpdateType,

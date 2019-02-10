@@ -317,6 +317,9 @@ const updateInfo = async (req, res, next) => {
     if (!isAdmin && status !== undefined) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));
+    } else if (isAdmin && req.user.id === id) {
+      logger.error('UserController::updateInfo::error. Admin cannot update status himself');
+      return next(new Error('Admin cannot update status himself'));
     }
 
     const targetUser = await UserModel.findById(id);

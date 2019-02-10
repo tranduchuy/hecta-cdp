@@ -810,7 +810,10 @@ const shareBalanceToChild = async (req, res, next) => {
         meta: {},
         entries: [{
           parentBalance: afterParentBalance,
-          childBalance: afterChildBalance
+          childBalance: {
+            after: afterChildBalance,
+            before: childBalanceInfo
+          }
         }]
       }
     });

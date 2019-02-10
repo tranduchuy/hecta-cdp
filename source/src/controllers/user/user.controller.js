@@ -326,7 +326,7 @@ const updateInfo = async (req, res, next) => {
     }
 
     if (type) {
-      const errors = await UserService.isValidUpdateType(targetUser);
+      const errors = await UserService.isValidUpdateType(id);
       if (errors.length !== 0) {
         logger.error('UserController::updateInfo::error', errors.join('\n'));
 

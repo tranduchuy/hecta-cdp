@@ -2,6 +2,7 @@ const GlobalConstant = require('../../constants/global.constant');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
 const StatusConstant = require('../../constants/status.constant');
+const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const URService = require('./user-relationship.service');
@@ -572,6 +573,48 @@ const removeParent = async (req, res, next) => {
   }
 };
 
+const getListDetailById = async (req, res, next) => {
+  logger.info(`${ctrlNm}::getListDetailById::called`);
+
+  try {
+    if (req.query.ids === '') {
+      return res.json({
+        status: HttpCodeConstant.Success,
+        messages: [],
+        data: {
+          meta: {},
+          entries: []
+        }
+      });
+    }
+
+    const ids = req.query.ids.split(',')
+      .filter(v => !isNaN(v))
+      .map(v => parseInt(v, 0));
+
+    const relations = await URModel.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.in]: ids
+        },
+        parentId: req.user.id
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {},
+        entries: relations
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::getListDetailById::error`, e);
+    next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
@@ -580,5 +623,6 @@ module.exports = {
   getDetailChild,
   listRequest,
   removeChild,
-  removeParent
+  removeParent,
+  getListDetailById
 };

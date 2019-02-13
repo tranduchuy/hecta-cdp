@@ -1252,12 +1252,59 @@ const updateStatusAdmin = async (req, res, next) => {
   }
 };
 
+const getListByIdsForNotifies = async (req, res, next) => {
+  logger.info('UserController::getListByIdsForNotifies::called');
+
+  try {
+    const ids = req.query.ids.split(',')
+      .filter(v => !isNaN(v))
+      .map(v => parseInt(v, 0));
+
+    const users = await UserModel.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.in]: ids
+        }
+      }
+    });
+
+    const resultUsers = users.map(u => {
+      return {
+        'id': u.id,
+        'email': u.email,
+        'username': u.username,
+        'name': u.name,
+        'address': u.address,
+        'phone': u.phone,
+        'gender': u.gender,
+        'city': u.city,
+        'district': u.district,
+        'ward': u.ward,
+        'avatar': u.avatar,
+        'birthday': u.birthday,
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: resultUsers
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getListByIdsForNotifies::error', e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
   getInfoLoggedIn,
   getList,
+  getListByIdsForNotifies,
   getListAdmin,
   registerAdmin,
   updateInfo,

@@ -9,6 +9,7 @@ const UserRelationShipCtrl = require('../controllers/user-relationship/user-rela
 router.get('/children', UserRelationShipCtrl.listChildren);
 router.get('/child-detail', UserRelationShipCtrl.getDetailChild);
 router.get('/request', UserRelationShipCtrl.listRequest);
+router.get('/detail-for-notifies', UserRelationShipCtrl.getListDetailById);
 
 // POST
 router.post('/add-registered-child', UserRelationShipCtrl.addRegisteredChild);

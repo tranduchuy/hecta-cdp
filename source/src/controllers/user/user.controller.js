@@ -957,7 +957,7 @@ const updateBalanceSaleCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'SALE')
+    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'SALE')
       .then(() => {
         return res.json({
           status: HttpCodeConstant.Success,
@@ -988,7 +988,7 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'UP_NEWS')
+    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'UP_NEWS')
       .then(() => {
         return res.json({
           status: HttpCodeConstant.Success,

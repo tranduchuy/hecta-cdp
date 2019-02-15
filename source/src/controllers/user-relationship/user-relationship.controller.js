@@ -597,7 +597,7 @@ const getListDetailById = async (req, res, next) => {
         id: {
           [Sequelize.Op.in]: ids
         },
-        parentId: req.user.id
+        childId: req.user.id
       }
     });
 

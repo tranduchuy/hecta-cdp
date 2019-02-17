@@ -14,8 +14,10 @@ const logger = log4js.getLogger('Controllers');
 const AJV = require('../../core/ajv');
 const MailService = require('../../services/mailer.service');
 const Sequelize = require('sequelize');
+const {extractPaginationCondition} = require('../../services/request.service');
 
 // constants
+const UserConstant = require('./user.constant');
 const StatusConstant = require('../../constants/status.constant');
 const UserRoleConstant = require('../../constants/user-role.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
@@ -33,6 +35,10 @@ const findDetailByEmailSchema = require('./validation-schemas/find-detail-by-ema
 const shareBalanceSchema = require('./validation-schemas/share-balance.schema');
 const updateBalanceSchema = require('./validation-schemas/update-balance.schema');
 const updateBalanceSaleCostSchema = require('./validation-schemas/update-balance-by-sale-cost.schema');
+const getListSchema = require('./validation-schemas/get-list.schema');
+const getListAdminSchema = require('./validation-schemas/get-list-admin.schema');
+const registerAdminSchema = require('./validation-schemas/register-admin.schema');
+const updateStatusAdminSchema = require('./validation-schemas/update-status-admin.schema');
 
 /**
  *
@@ -73,12 +79,14 @@ const login = async (req, res, next) => {
 
     const userInfoResponse = {
       id: user.id,
+      role: user.role,
       email: user.email,
       username: user.username,
       name: user.name,
       phone: user.phone,
       address: user.address,
       type: user.type,
+      status: user.status,
       balance: await UserService.getBalanceInfo(user.id)
     };
     const token = UserService.generateToken({email: user.email});
@@ -120,7 +128,11 @@ const register = async (req, res, next) => {
       });
     }
 
-    const {email, password, confirmedPassword, name, username, phone} = req.body;
+    const {
+      email, password, confirmedPassword, birthday,
+      name, username, phone, address, gender, city, district, ward
+    } = req.body;
+
     if (password !== confirmedPassword) {
       logger.error('UserController::register::error. 2 passwords not same');
       return next(new Error('2 passwords not same'));
@@ -132,7 +144,25 @@ const register = async (req, res, next) => {
       return next(new Error('Duplicate email'));
     }
 
-    const newUser = await UserService.createUser(req.body);
+    const newUserData = {
+      email,
+      username,
+      name,
+      password,
+      birthday: null,
+      phone: phone || null,
+      gender: gender || null,
+      city: city || null,
+      district: district || null,
+      ward: ward || null,
+      address
+    };
+
+    if (birthday) {
+      newUserData.birthday = new Date(birthday || '');
+    }
+
+    const newUser = await UserService.createUser(newUserData);
     await UserService.createBalanceInfo(newUser.id);
 
     // nếu là admin tạo thì ko cần gửi email, và mặc định là active sẵn
@@ -151,7 +181,7 @@ const register = async (req, res, next) => {
       messages: ['Success'],
       data: {
         meta: {},
-        entries: [{email, name, username, phone}]
+        entries: [{email, name, username, phone, address, gender, city, district, ward}]
       }
     });
   } catch (e) {
@@ -226,6 +256,8 @@ const getInfoLoggedIn = async (req, res, next) => {
   try {
     const userInfoResponse = {
       id: req.user.id,
+      role: req.user.role,
+      type: req.user.type,
       email: req.user.email,
       username: req.user.username,
       name: req.user.name,
@@ -261,17 +293,22 @@ const updateInfo = async (req, res, next) => {
   try {
     const errors = AJV(updateInfoSchema, req.body);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
-    const {name, gender, phone, address, password, oldPassword, confirmedPassword, status, type} = req.body;
-    const {id} = req.params;
+    const {
+      name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
+      city, district, ward, expirationDate
+    } = req.body;
+    let {id} = req.params;
+    if (isNaN(id)) {
+      return next(new Error('Id must be a number'));
+    } else {
+      id = parseInt(id, 0);
+    }
+
     const isAdmin = [UserRoleConstant.Admin, UserRoleConstant.Master].some(r => r === req.user.role);
-    if (isAdmin === false && req.user.id != id) {
+    if (isAdmin === false && req.user.id !== id) {
       logger.error(`UserController::updateInfo::error. User ${req.user.id} try to update info of user ${id}, but he's not ADMIN`);
       return next(new Error('Permission denied'));
     }
@@ -280,6 +317,9 @@ const updateInfo = async (req, res, next) => {
     if (!isAdmin && status !== undefined) {
       logger.error('UserController::updateInfo::error. Permission denied');
       return next(new Error('Permission denied'));
+    } else if (isAdmin && req.user.id === id) {
+      logger.error('UserController::updateInfo::error. Admin cannot update status himself');
+      return next(new Error('Admin cannot update status himself'));
     }
 
     const targetUser = await UserModel.findById(id);
@@ -289,15 +329,11 @@ const updateInfo = async (req, res, next) => {
     }
 
     if (type) {
-      const errors = await UserService.isValidUpdateType(targetUser);
+      const errors = await UserService.isValidUpdateType(id);
       if (errors.length !== 0) {
         logger.error('UserController::updateInfo::error', errors.join('\n'));
 
-        return res.json({
-          status: HttpCodeConstant.Error,
-          messages: errors,
-          data: {meta: {},entries: []}
-        });
+        return next(new Error(errors.join('\n')));
       }
     }
 
@@ -309,9 +345,23 @@ const updateInfo = async (req, res, next) => {
       }
     }
 
+    if (isAdmin && expirationDate) {
+      const balanceInstance = await UserService.getBalanceInstance(targetUser.id);
+      if (!balanceInstance) {
+        return next(new Error(''));
+      } else {
+        const time = parseInt(expirationDate, 0);
+        balanceInstance.expiredAt = new Date(time);
+        await balanceInstance.save();
+      }
+    }
+
     targetUser.name = name || targetUser.name;
     targetUser.address = address || targetUser.address;
     targetUser.phone = phone || targetUser.phone;
+    targetUser.city = city || targetUser.city;
+    targetUser.district = district || targetUser.district;
+    targetUser.ward = ward || targetUser.ward;
     targetUser.gender = gender || targetUser.gender;
     targetUser.passwordHash = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
     targetUser.type = type || targetUser.type;
@@ -325,13 +375,19 @@ const updateInfo = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: targetUser.id,
           email: targetUser.email,
           name: targetUser.name,
           username: targetUser.username,
           phone: targetUser.phone,
           address: targetUser.address,
           gender: targetUser.gender,
-          type: targetUser.type
+          type: targetUser.type,
+          city: targetUser.city,
+          district: targetUser.district,
+          ward: targetUser.ward,
+          birthday: targetUser.birthday,
+          avatar: targetUser.avatar
         }]
       }
     });
@@ -583,7 +639,10 @@ const findDetailByEmail = async (req, res, next) => {
     const user = await UserModel.findOne({
       where: {
         email: req.query.email,
-        status: StatusConstant.Active
+        status: StatusConstant.Active,
+        role: {
+          [Sequelize.Op.notIn]: [UserRoleConstant.Admin, UserRoleConstant.Master]
+        }
       }
     });
 
@@ -599,6 +658,8 @@ const findDetailByEmail = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: user.id,
+          role: user.role,
           email: user.email,
           name: user.name || '',
           username: user.username,
@@ -636,14 +697,22 @@ const getHighlightUser = async (req, res, next) => {
       },
       limit: 10
     });
+
     const resultUsers = users.map(u => {
       return {
+        id: u.id,
         email: u.email,
         username: u.username,
         name: u.name,
         avatar: u.avatar,
         phone: u.phone,
-        gender: u.gender
+        address: u.address,
+        type: u.type,
+        city: u.city,
+        district: u.district,
+        ward: u.ward,
+        gender: u.gender,
+        birthday: user.birthday
       }
     });
 
@@ -727,6 +796,8 @@ const shareBalanceToChild = async (req, res, next) => {
       return next(new Error('You and that account have no real relation ship'));
     }
 
+    // TODO: check expired using balance
+
     const childBalanceInfo = await UserService.getBalanceInfo(childId);
     const afterParentBalance = await UserService.updateMain1(req.user.id, -amount);
     logger.info(`UserController::shareBalanceToChild::updateMain1::success. Update success for parent ${req.user.id}. From ${JSON.stringify(parentBalanceInfo)} to ${JSON.stringify(afterParentBalance)}`);
@@ -752,7 +823,10 @@ const shareBalanceToChild = async (req, res, next) => {
         meta: {},
         entries: [{
           parentBalance: afterParentBalance,
-          childBalance: afterChildBalance
+          childBalance: {
+            after: afterChildBalance,
+            before: childBalanceInfo
+          }
         }]
       }
     });
@@ -848,8 +922,11 @@ const updateBalance = async (req, res, next) => {
       status: HttpCodeConstant.Success,
       messages: ['Success'],
       data: {
-        meta: {},
-        entries: [aBalanceInfo]
+        meta: {
+          before: bBalanceInfo,
+          after: aBalanceInfo
+        },
+        entries: []
       }
     });
   } catch (e) {
@@ -867,7 +944,7 @@ const updateBalance = async (req, res, next) => {
  */
 const updateBalanceSaleCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceSaleCost::called`);
-  // TODO: note property should include sale_id (mongo id)
+  // TODO: note property should include post id (mongo id)
 
   try {
     const errors = AJV(updateBalanceSaleCostSchema, req.body);
@@ -880,7 +957,7 @@ const updateBalanceSaleCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'SALE')
+    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'SALE')
       .then(() => {
         return res.json({
           status: HttpCodeConstant.Success,
@@ -901,21 +978,17 @@ const updateBalanceSaleCost = async (req, res, next) => {
 
 const updateBalanceUpNewsCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceUpNewsCost::called`);
-  // TODO: note property should include sale_id (mongo id)
+  // note property should include sale_id (mongo id)
 
   try {
     // using same schema with function updateBalanceSaleCost
     const errors = AJV(updateBalanceSaleCostSchema, req.body);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething(req.user.id, cost, note, 'UP_NEWS')
+    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'UP_NEWS')
       .then(() => {
         return res.json({
           status: HttpCodeConstant.Success,
@@ -933,13 +1006,311 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
   }
 };
 
+const checkValidToken = async (req, res, next) => {
+  return res.json({
+    status: HttpCodeConstant.Success,
+    messages: [],
+    data: {
+      meta: {},
+      entries: []
+    }
+  });
+};
+
+const getListAdmin = async (req, res, next) => {
+  logger.info('UserController::getListAdmin::called');
+
+  try {
+    const errors = AJV(getListAdminSchema, req.query);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const paginationCond = extractPaginationCondition(req);
+    const sortCond = {sd: 'ASC', sortBy: 'id'};
+    if (req.query.sortBy && UserConstant.availableSortPropertiesForAdmin.indexOf(req.query.sortBy) !== -1) {
+      sortCond.sortBy = req.query.sortBy;
+    }
+
+    const inputSd = (req.query.sd || '').toUpperCase();
+    if (req.query.sd && (inputSd === 'ASC' || inputSd === 'DESC')) {
+      sortCond.sd = inputSd;
+    }
+
+    const query = {};
+    ['name', 'username', 'email', 'phone', 'phone'].forEach(p => {
+      if (req.query[p] && req.query[p].toString().trim() !== '') {
+        query[p] = req.query[p].toString().trim();
+      }
+    });
+
+    query.role = {
+      [Sequelize.Op.in]: [UserRoleConstant.Admin, UserRoleConstant.Master]
+    };
+
+    const result = await UserService.getListUser(paginationCond, sortCond, query);
+    logger.info('UserController::getList::success');
+
+    let users = result.rows.map(r => {
+      return {
+        'id': r.id,
+        'email': r.email,
+        'username': r.username,
+        'name': r.name,
+        'createdAt': r.createdAt,
+        'updatedAt': r.updatedAt,
+        'address': r.address,
+        'phone': r.phone,
+        'gender': r.gender,
+        'role': r.role,
+        'city': r.city,
+        'district': r.district,
+        'ward': r.ward,
+        'avatar': r.avatar,
+        'birthday': r.birthday,
+        'type': r.type,
+        'status': r.status
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {
+          totalItems: result.count
+        },
+        entries: users
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getListAdmin::error', e);
+    return next(e);
+  }
+};
+
+const getList = async (req, res, next) => {
+  logger.info('UserController::getList::called');
+
+  try {
+    const errors = AJV(getListSchema, req.query);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const paginationCond = extractPaginationCondition(req);
+    const sortCond = {sd: 'ASC', sortBy: 'id'};
+    if (req.query.sortBy && UserConstant.availableSortPropertiesForAdmin.indexOf(req.query.sortBy) !== -1) {
+      sortCond.sortBy = req.query.sortBy;
+    }
+
+    const inputSd = (req.query.sd || '').toUpperCase();
+    if (req.query.sd && (inputSd === 'ASC' || inputSd === 'DESC')) {
+      sortCond.sd = inputSd;
+    }
+
+    const query = {};
+    ['name', 'username', 'email', 'phone', 'type', 'city', 'district', 'ward', 'phone', 'role'].forEach(p => {
+      if (req.query[p] && req.query[p].toString().trim() !== '') {
+        query[p] = req.query[p].toString().trim();
+      }
+    });
+
+    const result = await UserService.getListUser(paginationCond, sortCond, query);
+    logger.info('UserController::getList::success');
+
+    let users = result.rows.map(r => {
+      return {
+        'id': r.id,
+        'email': r.email,
+        'username': r.username,
+        'name': r.name,
+        'createdAt': r.createdAt,
+        'updatedAt': r.updatedAt,
+        'address': r.address,
+        'phone': r.phone,
+        'gender': r.gender,
+        'role': r.role,
+        'city': r.city,
+        'district': r.district,
+        'ward': r.ward,
+        'avatar': r.avatar,
+        'birthday': r.birthday,
+        'type': r.type,
+        'status': r.status
+      }
+    });
+
+    users = await UserService.mapBalanceInfoToListUser(users);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {
+          totalItems: result.count
+        },
+        entries: users
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getList::error', e);
+    return next(e);
+  }
+};
+
+const registerAdmin = async (req, res, next) => {
+  logger.info('UserController::registerAdmin::called');
+
+  try {
+    const errors = AJV(registerAdminSchema, req.body);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const {
+      email, password, confirmedPassword, name, username, phone
+    } = req.body;
+
+    if (password !== confirmedPassword) {
+      logger.error('UserController::registerAdmin::error. 2 passwords not same');
+      return next(new Error('2 passwords not same'));
+    }
+
+    const duplicatedUsers = await UserModel.findAll({where: {email}});
+    if (duplicatedUsers.length !== 0) {
+      logger.error('UserController::registerAdmin::error. Duplicate email');
+      return next(new Error('Duplicate email'));
+    }
+
+    const newUserData = {
+      email,
+      username,
+      name,
+      password,
+      phone: phone,
+      type: UserTypeConstant.Personal,
+      role: UserRoleConstant.Admin
+    };
+
+    const newUser = await UserService.createUser(newUserData);
+    await UserService.createBalanceInfo(newUser.id);
+
+    // nếu là admin tạo thì ko cần gửi email, và mặc định là active sẵn
+    if (req.user && [UserRoleConstant.Master, UserRoleConstant.Admin].some(r => r === req.user.role)) {
+      newUser.status = StatusConstant.Active;
+      newUser.tokenEmailConfirm = '';
+      await newUser.save();
+    } else {
+      // Send email
+      MailService.sendConfirmEmail(email, newUser.tokenEmailConfirm);
+    }
+
+    logger.info(`UserController::registerAdmin::success. Email: ${email}`);
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: [{email, name, username, phone, id: newUser.id}]
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::registerAdmin::error', e);
+    return next(e);
+  }
+};
+
+const updateStatusAdmin = async (req, res, next) => {
+  logger.info('UserController::updateStatusAdmin::called');
+  try {
+    const errors = AJV(updateStatusAdminSchema, req.body);
+    if (errors.length > 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const admin = await UserService.findById(req.params.adminId);
+    if (!admin) {
+      return next(new Error('Admin not found'));
+    }
+
+    admin.status = req.body.status;
+    await admin.save();
+    logger.info('UserController::updateStatusAdmin::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: []
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::updateStatusAdmin::error', e);
+    return next(e);
+  }
+};
+
+const getListByIdsForNotifies = async (req, res, next) => {
+  logger.info('UserController::getListByIdsForNotifies::called');
+
+  try {
+    const ids = req.query.ids.split(',')
+      .filter(v => !isNaN(v))
+      .map(v => parseInt(v, 0));
+
+    const users = await UserModel.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.in]: ids
+        }
+      }
+    });
+
+    const resultUsers = users.map(u => {
+      return {
+        'id': u.id,
+        'email': u.email,
+        'username': u.username,
+        'name': u.name,
+        'address': u.address,
+        'phone': u.phone,
+        'gender': u.gender,
+        'city': u.city,
+        'district': u.district,
+        'ward': u.ward,
+        'avatar': u.avatar,
+        'birthday': u.birthday,
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: resultUsers
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getListByIdsForNotifies::error', e);
+  }
+};
+
 module.exports = {
   login,
   register,
   confirmRegister,
   getInfoLoggedIn,
+  getList,
+  getListByIdsForNotifies,
+  getListAdmin,
+  registerAdmin,
   updateInfo,
+  updateStatusAdmin,
   checkDuplicateEmailOrUsername,
+  checkValidToken,
   resendConfirmRegister,
   forgetPassword,
   resetPassword,

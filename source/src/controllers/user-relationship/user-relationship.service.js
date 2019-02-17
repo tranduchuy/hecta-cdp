@@ -132,9 +132,13 @@ function mapQueryToValidObjectSort(options) {
  * @param phone
  * @param address
  * @param gender
+ * @param city
+ * @param district
+ * @param ward
+ * @param birthday
  * @return {Promise<this|Errors.ValidationError>}
  */
-const registerNewChild = async ({email, password, name, username, phone, address, gender}) => {
+const registerNewChild = async ({email, password, name, username, phone, address, gender, city, district, ward, birthday}) => {
   const salt = bcrypt.genSaltSync(UserConstant.saltLength);
   const tokenEmailConfirm = RandomString.generate({
     length: UserConstant.tokenConfirmEmailLength,
@@ -152,6 +156,10 @@ const registerNewChild = async ({email, password, name, username, phone, address
     tokenEmailConfirm,
     address,
     gender,
+    city,
+    district,
+    ward,
+    birthday,
     status: StatusConstant.PendingOrWaitConfirm
   });
 

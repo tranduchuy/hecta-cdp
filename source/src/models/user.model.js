@@ -14,7 +14,6 @@
  *  @property {string} address
  *  @property {string} phone
  *  @property {number} gender
- *  @property {number} age
  *  @property {number} role
  *  @property {number} city
  *  @property {number} district
@@ -95,22 +94,22 @@ const userSchema = {
     type: Sequelize.DataTypes.INTEGER,
     field: 'GENDER'
   },
-  age: {
-    type: Sequelize.DataTypes.INTEGER,
-    field: 'AGE'
-  },
   role: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'ROLE',
     defaultValue: UserRoleConstant.EndUser
   },
   city: {
-    type: Sequelize.DataTypes.INTEGER,
+    type: Sequelize.DataTypes.STRING,
     field: 'CITY'
   },
   district: {
     type: Sequelize.DataTypes.INTEGER,
     field: 'DISTRICT'
+  },
+  ward: {
+    type: Sequelize.DataTypes.INTEGER,
+    field: 'WARD'
   },
   avatar: {
     type: Sequelize.DataTypes.TEXT,

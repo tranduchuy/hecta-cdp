@@ -2,6 +2,7 @@ const GlobalConstant = require('../../constants/global.constant');
 const HttpCodeConstant = require('../../constants/http-code.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
 const StatusConstant = require('../../constants/status.constant');
+const Sequelize = require('sequelize');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const URService = require('./user-relationship.service');
@@ -223,6 +224,8 @@ const addRegisteredChild = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: newRelation.id,
+          status: newRelation.status,
           parentId: newRelation.parentId,
           childId: newRelation.childId,
           credit: newRelation.credit,
@@ -283,6 +286,7 @@ const replyRequest = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: relation.id,
           parentId: relation.parentId,
           childId: relation.childId,
           credit: relation.credit,
@@ -314,7 +318,13 @@ const addNewChild = async (req, res, next) => {
       });
     }
 
-    const {name, username, email, password, confirmedPassword, phone, gender, address} = req.body;
+    const {name, username, email, password, confirmedPassword, phone, gender, address, city, district, ward, birthday} = req.body;
+    const duplicatedUsers = await UserModel.findAll({where: {email}});
+    if (duplicatedUsers.length !== 0) {
+      logger.error('UserController::register::error. Duplicate email');
+      return next(new Error('Duplicate email'));
+    }
+
     if (password !== confirmedPassword) {
       logger.error(`${ctrlNm}::addNewChild::error. 2 password not same`);
       return next(new Error('2 password not same'));
@@ -325,11 +335,18 @@ const addNewChild = async (req, res, next) => {
       password,
       name,
       username,
+      city: city || null,
+      district: district || null,
+      ward: ward || null,
       phone: phone || null,
       address: address || null,
-      gender: gender || null
+      gender: gender || null,
+      birthday: null
     };
 
+    if (birthday) {
+      newUserData.birthday = new Date(birthday || '');
+    }
     // create user, child should confirm email
     const newChild = await URService.registerNewChild(newUserData);
     // create user balance
@@ -349,6 +366,7 @@ const addNewChild = async (req, res, next) => {
       data: {
         meta: {},
         entries: [{
+          id: newRelation.id,
           parentId: newRelation.parentId,
           childId: newRelation.childId,
           credit: newRelation.credit,
@@ -437,7 +455,15 @@ const listRequest = async (req, res, next) => {
     const relations = await URModel.findAll({
       where: {
         childId: req.user.id
-      }
+      },
+      attributes: ['id', 'status', 'delFlag'],
+      include: [
+        {
+          model: UserModel,
+          as: 'parentInfo',
+          attributes: ['id', 'name', 'username', 'email']
+        }
+      ]
     });
     logger.info(`${ctrlNm}::listRequest::success`);
 
@@ -468,14 +494,11 @@ const removeChild = async (req, res, next) => {
   try {
     const errors = AJV(removeChildSchema, req.query);
     if (errors.length !== 0) {
-      return res.json({
-        status: HttpCodeConstant.Error,
-        messages: errors,
-        data: {meta: {}, entries: []}
-      });
+      return next(new Error(errors.join('\n')));
     }
 
-    const child = await UserModel.findById(req.query.childId);
+    const childId = parseInt(req.query.childId);
+    const child = await UserModel.findById(childId);
     if (!child) {
       logger.error(`${ctrlNm}::removeChild::error. Child not found. User id ${req.query.childId}`);
       return next(new Error('Account child not found'));
@@ -497,7 +520,7 @@ const removeChild = async (req, res, next) => {
       messages: ['Success'],
       data: {
         meta: {balance: aParentBalance},
-        entries: {}
+        entries: [relation]
       }
     });
   } catch (e) {
@@ -550,6 +573,48 @@ const removeParent = async (req, res, next) => {
   }
 };
 
+const getListDetailById = async (req, res, next) => {
+  logger.info(`${ctrlNm}::getListDetailById::called`);
+
+  try {
+    if (req.query.ids === '') {
+      return res.json({
+        status: HttpCodeConstant.Success,
+        messages: [],
+        data: {
+          meta: {},
+          entries: []
+        }
+      });
+    }
+
+    const ids = req.query.ids.split(',')
+      .filter(v => !isNaN(v))
+      .map(v => parseInt(v, 0));
+
+    const relations = await URModel.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.in]: ids
+        },
+        childId: req.user.id
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: [],
+      data: {
+        meta: {},
+        entries: relations
+      }
+    });
+  } catch (e) {
+    logger.error(`${ctrlNm}::getListDetailById::error`, e);
+    next(e);
+  }
+};
+
 module.exports = {
   addRegisteredChild,
   listChildren,
@@ -558,5 +623,6 @@ module.exports = {
   getDetailChild,
   listRequest,
   removeChild,
-  removeParent
+  removeParent,
+  getListDetailById
 };

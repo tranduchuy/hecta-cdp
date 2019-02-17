@@ -10,11 +10,11 @@ const transporter = NodeMailer.createTransport({
   secure: true,
   auth: {
     type: 'OAuth2',
-    user: "snowyflowervietnam.com@gmail.com",
-    clientId: '822635889511-1q9ud5oj5s78p332l933p6fp2pph5303.apps.googleusercontent.com',
-    clientSecret: 'YSYSKS9eN4vatkPruPQVAE9L',
-    refreshToken: '1/nLxM0nfUFkQb5uij29DmHWkFO0Ej87_u7vhaN0tCvL8',
-    accessToken: 'ya29.GlsGBnSdA7Twz_qs0AgP8mXna4-t6lTmMs9ip-CsPMEAT3Q-UlrDQ2MRhnabt6F2054jbn3c51f1Aih4HErmxYstP9mR0ZI6VElGh3bWzpcK1OrCpZ97c6ZzTK1D',
+    user: "cskh.hecta@gmail.com",
+    clientId: '392023644781-6u308jk38e2n7kl203uaf2gpqvn2foso.apps.googleusercontent.com',
+    clientSecret: 'G7PGcCfpq8L4iUZgiHWLiojM',
+    refreshToken: '1/ddtYS1ET303Ns6GqwEsAHy1zpbHNkwlsBzSgYY4aqHQ',
+    accessToken: 'ya29.GlutBjuqIk8WBKsI9fY0ulf2Ae4e2qDFfQ1naDYh4y5AJuyKxmsz2TPzXQicX84zRR68WMvxseNz_fDU7P0OyfYHl0B5FQHVxnzh4z_rOCEvsMmDY274t2elEhi9',
     expires: 12345
   }
 });
@@ -26,12 +26,12 @@ const transporter = NodeMailer.createTransport({
  */
 const sendConfirmEmail = (email, token) => {
   const mailOptions = {
-    from: 'snowyflowervietnam.com@gmail.com',
+    from: 'cskh.hecta@gmail.com',
     to: email,
     subject: "Hecta VN - Xác nhận đăng kí",
     text: "http://hecta.vn/account-confirm/" + token
   };
-
+  
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
       logger.error('MailService::sendConfirmEmail::error', error);
@@ -51,12 +51,12 @@ const sendConfirmEmail = (email, token) => {
 const sendResetPassword = (email, token) => {
   return new Promise(((resolve, reject) => {
     const mailOptions = {
-      from: 'snowyflowervietnam.com@gmail.com',
+      from: 'cskh.hecta@gmail.com',
       to: email,
       subject: "Hecta VN - Đổi mật khẩu",
       text: "http://hecta.vn/reset-password/" + token
     };
-
+    
     transporter.sendMail(mailOptions, (err) => {
       if (err) {
         return reject(err);

@@ -5,17 +5,10 @@ const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
 
 const transporter = NodeMailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: 'gmail',
   auth: {
-    type: 'OAuth2',
-    user: "cskh.hecta@gmail.com",
-    clientId: '392023644781-6u308jk38e2n7kl203uaf2gpqvn2foso.apps.googleusercontent.com',
-    clientSecret: 'G7PGcCfpq8L4iUZgiHWLiojM',
-    refreshToken: '1/ddtYS1ET303Ns6GqwEsAHy1zpbHNkwlsBzSgYY4aqHQ',
-    accessToken: 'ya29.GlutBjuqIk8WBKsI9fY0ulf2Ae4e2qDFfQ1naDYh4y5AJuyKxmsz2TPzXQicX84zRR68WMvxseNz_fDU7P0OyfYHl0B5FQHVxnzh4z_rOCEvsMmDY274t2elEhi9',
-    expires: 12345
+    user: 'cskh.hecta@gmail.com',
+    pass: 'Batdongsan2018'
   }
 });
 

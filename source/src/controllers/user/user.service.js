@@ -130,7 +130,12 @@ const createBalanceInfo = async (userId) => {
  */
 const getBalanceInfo = async (userId) => {
   const user = await UserModel.findById(userId);
-  const balance = await BalanceModel.findOne({where: {userId}});
+  let balance = await BalanceModel.findOne({where: {userId}});
+
+  if (!balance) {
+    balance = await createBalanceInfo(userId);
+  }
+
   const result = {
     main1: balance.main1,
     main2: balance.main2,

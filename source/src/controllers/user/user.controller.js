@@ -1295,11 +1295,12 @@ const getListByIdsForNotifies = async (req, res, next) => {
     });
   } catch (e) {
     logger.error('UserController::getListByIdsForNotifies::error', e);
+    return next(e);
   }
 };
 
 const getListBasicInfoByIds = async (req, res, next) => {
-  logger.info('UserController::getListByIdsForNotifies::called');
+  logger.info('UserController::getListBasicInfoByIds::called');
 
   try {
     const ids = req.query.ids.split(',')
@@ -1340,7 +1341,8 @@ const getListBasicInfoByIds = async (req, res, next) => {
       }
     });
   } catch (e) {
-    logger.error('UserController::getListByIdsForNotifies::error', e);
+    logger.error('UserController::getListBasicInfoByIds::error', e);
+    return next(e);
   }
 };
 

@@ -548,7 +548,7 @@ const forgetPassword = async (req, res, next) => {
     }
 
     await UserService.blockUserForgetPassword(user);
-    await MailService.sendResetPassword(user.email, user.passwordReminderToken);
+    await MailService.sendResetPassword(user.email, user.passwordReminderToken, res.body.type);
     logger.info('UserController::forgetPassword::success');
 
     return res.json({

@@ -549,7 +549,7 @@ const forgetPassword = async (req, res, next) => {
     }
 
     await UserService.blockUserForgetPassword(user);
-    await MailService.sendResetPassword(user.email, user.passwordReminderToken);
+    await MailService.sendResetPassword(user.email, user.passwordReminderToken, req.query.type);
     logger.info('UserController::forgetPassword::success');
 
     return res.json({
@@ -1296,6 +1296,54 @@ const getListByIdsForNotifies = async (req, res, next) => {
     });
   } catch (e) {
     logger.error('UserController::getListByIdsForNotifies::error', e);
+    return next(e);
+  }
+};
+
+const getListBasicInfoByIds = async (req, res, next) => {
+  logger.info('UserController::getListBasicInfoByIds::called');
+
+  try {
+    const ids = req.query.ids.split(',')
+      .filter(v => !isNaN(v))
+      .map(v => parseInt(v, 0));
+
+    const users = await UserModel.findAll({
+      where: {
+        id: {
+          [Sequelize.Op.in]: ids
+        }
+      }
+    });
+
+    const resultUsers = users.map(u => {
+      return {
+        'id': u.id,
+        'email': u.email,
+        'username': u.username,
+        'name': u.name,
+        'address': u.address,
+        'phone': u.phone,
+        'gender': u.gender,
+        'city': u.city,
+        'district': u.district,
+        'ward': u.ward,
+        'avatar': u.avatar,
+        'birthday': u.birthday,
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {
+        meta: {},
+        entries: resultUsers
+      }
+    });
+  } catch (e) {
+    logger.error('UserController::getListBasicInfoByIds::error', e);
+    return next(e);
   }
 };
 
@@ -1305,6 +1353,7 @@ module.exports = {
   confirmRegister,
   getInfoLoggedIn,
   getList,
+  getListBasicInfoByIds,
   getListByIdsForNotifies,
   getListAdmin,
   registerAdmin,

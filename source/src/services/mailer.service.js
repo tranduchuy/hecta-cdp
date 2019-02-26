@@ -46,9 +46,10 @@ const sendConfirmEmail = (email, token) => {
  * Send email to reset password
  * @param email
  * @param token
+ * @param type
  * @returns {Promise<any>}
  */
-const sendResetPassword = (email, token) => {
+const sendResetPassword = (email, token, type) => {
   return new Promise(((resolve, reject) => {
     const mailOptions = {
       from: 'cskh.hecta@gmail.com',
@@ -56,6 +57,10 @@ const sendResetPassword = (email, token) => {
       subject: "Hecta VN - Đổi mật khẩu",
       text: "http://hecta.vn/reset-password/" + token
     };
+
+    if (type === 'APP') {
+      mailOptions.text = 'https://khachhang.hecta.vn/reset-password/' + token;
+    }
     
     transporter.sendMail(mailOptions, (err) => {
       if (err) {

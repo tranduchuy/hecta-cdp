@@ -298,7 +298,7 @@ const updateInfo = async (req, res, next) => {
 
     const {
       name, gender, phone, address, password, oldPassword, confirmedPassword, status, type,
-      city, district, ward, expirationDate
+      city, district, ward, expirationDate, avatar
     } = req.body;
     let {id} = req.params;
     if (isNaN(id)) {
@@ -363,6 +363,7 @@ const updateInfo = async (req, res, next) => {
     targetUser.district = district || targetUser.district;
     targetUser.ward = ward || targetUser.ward;
     targetUser.gender = gender || targetUser.gender;
+    targetUser.avatar = avatar || targetUser.avatar;
     targetUser.passwordHash = password ? bcrypt.hashSync(password, targetUser.passwordSalt) : targetUser.passwordHash;
     targetUser.type = type || targetUser.type;
     targetUser.status = isAdmin ? status : targetUser.status;

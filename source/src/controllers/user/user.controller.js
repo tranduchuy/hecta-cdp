@@ -696,7 +696,7 @@ const getHighlightUser = async (req, res, next) => {
     const users = await UserModel.findAll({
       where: {
         avatar: {
-          [Sequelize.Op.notIn]: [null, '']
+          [Sequelize.Op.ne]: ""
         },
         role: {
           [Sequelize.Op.notIn]: [UserRoleConstant.Master, UserRoleConstant.Admin]

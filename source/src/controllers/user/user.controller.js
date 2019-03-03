@@ -719,7 +719,7 @@ const getHighlightUser = async (req, res, next) => {
         district: u.district,
         ward: u.ward,
         gender: u.gender,
-        birthday: user.birthday
+        birthday: u.birthday
       }
     });
     

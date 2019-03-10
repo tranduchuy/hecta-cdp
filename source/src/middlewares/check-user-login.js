@@ -33,6 +33,11 @@ module.exports = async (req, res, next) => {
     return next();
   }
 
+  if (!token) {
+    logger.info('CheckUserLogin::error::token is required');
+    return res.json(responseAccessDenied);
+  }
+
   try {
     let userInfo = jwt.verify(token, config.get('jwt').secret);
     const user = await UserModel.findOne({

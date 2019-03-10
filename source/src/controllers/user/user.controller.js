@@ -735,7 +735,8 @@ const getHighlightUser = async (req, res, next) => {
 };
 
 /**
- * Share balance from parent account to child account. The amount will be subtracted from parent's MAIN_1 and added into child's CREDIT
+ * Share balance from parent account to child account. The amount will be subtracted from parent's MAIN_1 and added
+ * into child's CREDIT
  * @param req
  * @param res
  * @param next
@@ -1002,6 +1003,36 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
       });
   } catch (e) {
     logger.error(`UserController::updateBalanceUpNewsCost::error`, e);
+    return next(e);
+  }
+};
+
+const updateBalanceBuyLead = async (req, res, next) => {
+  logger.info('UserController::updateBalanceBuyLead::called');
+
+  try {
+    const errors = AJV(updateBalanceSaleCostSchema, req.body);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const {cost, note} = req.body;
+    UserService.updateBalanceWhenBuyingLead(req.user.id, cost, note)
+      .then(() => {
+        logger.info('UserController::updateBalanceBuyLead::success');
+
+        return res.json({
+          status: HttpCodeConstant.Success,
+          messages: ['Success'],
+          data: {meta: {}, entries: []}
+        });
+      })
+      .catch(err => {
+        logger.error(`UserController::updateBalanceBuyLead::error`, err);
+        return next(err);
+      });
+  } catch (e) {
+    logger.error('UserController::updateBalanceBuyLead::error');
     return next(e);
   }
 };
@@ -1368,5 +1399,6 @@ module.exports = {
   shareBalanceToChild,
   updateBalance,
   updateBalanceSaleCost,
-  updateBalanceUpNewsCost
+  updateBalanceUpNewsCost,
+  updateBalanceBuyLead
 };

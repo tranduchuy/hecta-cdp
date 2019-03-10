@@ -10,5 +10,11 @@ module.exports = {
       minLength: 20
     }
   },
-  required: ['cost', 'note']
+  required: ['cost', 'note'],
+  errorMessage: {
+    properties: {
+      cost: 'Cost should be a number >= 0',
+      note: 'Note should have 20 characters'
+    }
+  }
 };

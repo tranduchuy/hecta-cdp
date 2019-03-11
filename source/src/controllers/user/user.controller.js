@@ -269,7 +269,12 @@ const getInfoLoggedIn = async (req, res, next) => {
       name: req.user.name,
       phone: req.user.phone,
       address: req.user.address,
-      balance: await UserService.getBalanceInfo(req.user.id)
+      balance: await UserService.getBalanceInfo(req.user.id),
+      gender: req.user.gender,
+      avatar: req.user.avatar,
+      birthday: req.user.birthday,
+      city: req.user.city,
+      district: req.user.district
     };
     
     return res.json({

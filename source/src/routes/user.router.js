@@ -4,7 +4,7 @@ const express = require('express');
  */
 const router = express.Router({});
 const UserCtrl = require('../controllers/user/user.controller');
-const UserRoleConstant = require('../constants/user-role.constant');
+const UR = require('../constants/user-role.constant');
 const checkRoleMiddleware = require('../middlewares/check-role');
 
 // GET
@@ -16,19 +16,19 @@ router.get('/check-email-username', UserCtrl.checkDuplicateEmailOrUsername);
 router.get('/forget-password', UserCtrl.forgetPassword);
 router.get('/find-detail', UserCtrl.findDetailByEmail);
 router.get('/highlight', UserCtrl.getHighlightUser);
-router.get('/', checkRoleMiddleware([UserRoleConstant.Admin, UserRoleConstant.Master]), UserCtrl.getList);
-router.get('/info-by-ids', checkRoleMiddleware([UserRoleConstant.Admin, UserRoleConstant.Master]), UserCtrl.getListBasicInfoByIds);
+router.get('/', checkRoleMiddleware([UR.Admin, UR.Master]), UserCtrl.getList);
+router.get('/info-by-ids', UserCtrl.getListBasicInfoByIds);
 router.get('/for-notifies', UserCtrl.getListByIdsForNotifies);
-router.get('/admin', checkRoleMiddleware([UserRoleConstant.Master]), UserCtrl.getListAdmin);
+router.get('/admin', checkRoleMiddleware([UR.Master]), UserCtrl.getListAdmin);
 
 // PUT
 router.put('/:id', UserCtrl.updateInfo);
-router.put('/admin-status/:adminId', checkRoleMiddleware([UserRoleConstant.Master]), UserCtrl.updateStatusAdmin);
+router.put('/admin-status/:adminId', checkRoleMiddleware([UR.Master]), UserCtrl.updateStatusAdmin);
 
 // POST
 router.post('/login', UserCtrl.login);
 router.post('/register', UserCtrl.register);
-router.post('/register-admin', checkRoleMiddleware([UserRoleConstant.Master]), UserCtrl.registerAdmin);
+router.post('/register-admin', checkRoleMiddleware([UR.Master]), UserCtrl.registerAdmin);
 router.post('/reset-password', UserCtrl.resetPassword);
 router.post('/share-credit', UserCtrl.shareBalanceToChild);
 router.post('/balance', UserCtrl.updateBalance);

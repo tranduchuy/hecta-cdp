@@ -18,6 +18,7 @@ router.get('/find-detail', UserCtrl.findDetailByEmail);
 router.get('/highlight', UserCtrl.getHighlightUser);
 router.get('/', checkRoleMiddleware([UR.Admin, UR.Master]), UserCtrl.getList);
 router.get('/info-by-ids', UserCtrl.getListBasicInfoByIds);
+router.get('/admin-get-user-info/:id', checkRoleMiddleware([UR.Master]), UserCtrl.adminGetDetailUserInfoById);
 router.get('/for-notifies', UserCtrl.getListByIdsForNotifies);
 router.get('/admin', checkRoleMiddleware([UR.Master]), UserCtrl.getListAdmin);
 

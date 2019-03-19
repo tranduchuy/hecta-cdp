@@ -33,7 +33,7 @@ module.exports = {
       type: 'number'
     },
     gender: {
-      enum: [GenderConstant.Male, GenderConstant.Female]
+      enum: [0, GenderConstant.Male, GenderConstant.Female]
     },
     name: {
       type: 'string',

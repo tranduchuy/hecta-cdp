@@ -150,6 +150,19 @@ const register = async (req, res, next) => {
       return next(new Error('Duplicate email'));
     }
 
+
+    let _gender;
+
+    if (isNaN(gender)) {
+      _gender = null;
+    } else {
+      _gender = gender;
+      if (gender === 0) {
+        _gender = 2;
+      }
+    }
+
+
     const newUserData = {
       email,
       username,
@@ -157,7 +170,7 @@ const register = async (req, res, next) => {
       password,
       birthday: null,
       phone: phone || null,
-      gender: gender || null,
+      gender: _gender,
       city: city || null,
       district: district || null,
       ward: ward || null,

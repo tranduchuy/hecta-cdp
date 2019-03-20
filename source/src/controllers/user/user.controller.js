@@ -1413,7 +1413,7 @@ const adminGetDetailUserInfoById = async (req, res, next) => {
     logger.info('UserController::adminGetDetailUserInfoById::called with userId ' + userId);
     userId = parseInt(userId.toString(), 0);
     const user = await UserModel.findById(userId);
-    const balance = UserService.getBalanceInfo(userId);
+    const balance = await UserService.getBalanceInfo(userId);
     const result = {
       'id': user.id,
       'email': user.email,

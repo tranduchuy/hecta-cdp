@@ -8,5 +8,6 @@ module.exports = [
   '/user/check-email-username',
   '/user/forget-password',
   '/user/reset-password',
-  '/user/resend-confirm-email'
+  '/user/resend-confirm-email',
+  '/user/balance/purchase-by-view-sale', // TODO: should make it more security
 ];

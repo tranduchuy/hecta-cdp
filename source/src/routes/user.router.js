@@ -37,5 +37,6 @@ router.post('/balance/sale-cost', UserCtrl.updateBalanceSaleCost);
 router.post('/balance/up-news-cost', UserCtrl.updateBalanceUpNewsCost);
 router.post('/balance/buy-lead', UserCtrl.updateBalanceBuyLead);
 router.post('/balance/revert-buy-lead', UserCtrl.updateBalanceBuyLead);
+router.post('/balance/purchase-by-view-sale', UserCtrl.updateBalanceByViewPostOfSale);
 
 module.exports = router;

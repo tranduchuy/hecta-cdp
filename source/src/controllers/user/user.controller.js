@@ -39,6 +39,7 @@ const getListSchema = require('./validation-schemas/get-list.schema');
 const getListAdminSchema = require('./validation-schemas/get-list-admin.schema');
 const registerAdminSchema = require('./validation-schemas/register-admin.schema');
 const updateStatusAdminSchema = require('./validation-schemas/update-status-admin.schema');
+const updateBalanceByViewingSale = require('./validation-schemas/update-balance-by-viewing-post-of-sale.schena');
 
 /**
  *
@@ -1445,6 +1446,53 @@ const adminGetDetailUserInfoById = async (req, res, next) => {
   }
 };
 
+/**
+ * Only for MASTER
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<*>}
+ */
+const updateBalanceByViewPostOfSale = async (req, res, next) => {
+  logger.info('UserController::updateBalanceByViewPostOfSale::called');
+
+  try {
+    const error = AJV(updateBalanceByViewingSale, req.body);
+    if (error.length > 0) {
+      throw new Error(error.join('\n'));
+    }
+
+    const {userId, cost, note} = req.body;
+    logger.info('UserController::updateBalanceByViewPostOfSale::called with params', JSON.stringify({
+      userId,
+      code,
+      note
+    }));
+
+    const user = await UserModel.findOne({
+      where: {
+        id: userId
+      }
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    await UserService.updateBalanceWhenBuyingSomething2(userId, cost, note, 'VIEW_POST_SALE');
+    logger.info('UserController::updateBalanceByViewPostOfSale::success');
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
+  } catch (e) {
+    logger.error('UserController::updateBalanceByViewPostOfSale::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   adminGetDetailUserInfoById,
   login,
@@ -1469,5 +1517,6 @@ module.exports = {
   updateBalance,
   updateBalanceSaleCost,
   updateBalanceUpNewsCost,
-  updateBalanceBuyLead
+  updateBalanceBuyLead,
+  updateBalanceByViewPostOfSale
 };

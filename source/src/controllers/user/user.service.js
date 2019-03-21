@@ -447,13 +447,26 @@ const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
       await balanceInstance.save();
       logger.info(`UserService::updateBalanceWhenBuyingSomething::update balance of user ${userId}`);
 
+      // Create transaction
       try {
-        if (targetType === 'SALE') {
-          const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
-          logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
-        } else if (targetType === 'UP_NEWS') {
-          const t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
-          logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
+        let t = null;
+        switch (targetType) {
+          case 'SALE':
+            t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
+            logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
+            break;
+
+
+          case 'UP_NEWS':
+            t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
+            logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
+            break;
+
+
+          case 'VIEW_POST_SALE':
+            t = await addTransactionViewPostSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
+            logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction view post sale, transaction id ${t.id}`);
+            break;
         }
       } catch (e) {
         return reject(e);
@@ -632,12 +645,33 @@ const addTransactionCostOfNews = async (userId, amount, note, before, after) => 
   return await newTransaction.save();
 };
 
+const addTransactionViewPostSale = async (userId, amount, note, before, after) => {
+  const newTransaction = TransactionModel.build({
+    userId,
+    fromUserId: null,
+    amount,
+    type: TransactionTypeConstant.ViewPostSale,
+    content: 'Cost of viewing sales',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
 const addTransactionCostOfBuyingLead = async (userId, amount, note, before, after) => {
   const newTransaction = TransactionModel.build({
     userId,
     fromUserId: null,
     amount,
-    type: TransactionTypeConstant.UpNew,
+    type: TransactionTypeConstant.BuyLead,
     content: 'Buying lead',
     note,
     bCredit: before.credit || 0,

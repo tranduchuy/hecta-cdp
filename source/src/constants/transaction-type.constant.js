@@ -7,4 +7,6 @@ module.exports = {
   UpNew: 6,
   ReturnMoney: 7,
   TakeBackMoney: 8,
+  ViewPostSale: 9,
+  BuyLead: 10
 };

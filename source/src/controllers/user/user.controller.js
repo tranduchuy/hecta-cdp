@@ -1493,6 +1493,32 @@ const updateBalanceByViewPostOfSale = async (req, res, next) => {
   }
 };
 
+const getListAdminIds = async (req, res, next) => {
+  logger.info('UserController::updateBalanceByViewPostOfSale::called');
+
+  try {
+    const admins = await UserModel.findAll({
+      where: {
+        role: {
+          [Sequelize.Op.in]: [UserRoleConstant.Admin, UserRoleConstant.Master]
+        }
+      }
+    });
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      message: ['Success'],
+      data: {
+        meta: {},
+        entries: admins.map(u => u.id)
+      }
+    })
+  } catch (e) {
+    logger.error('UserController::updateBalanceByViewPostOfSale::error', e);
+    return next(e);
+  }
+};
+
 module.exports = {
   adminGetDetailUserInfoById,
   login,
@@ -1503,6 +1529,7 @@ module.exports = {
   getListBasicInfoByIds,
   getListByIdsForNotifies,
   getListAdmin,
+  getListAdminIds,
   registerAdmin,
   updateInfo,
   updateStatusAdmin,

@@ -749,6 +749,44 @@ const availableSubtractOnMain2 = (targetType) => {
   ].includes(targetType);
 };
 
+/**
+ *
+ * @param {number} userId
+ * @param {number} cost
+ * @param {string} note
+ * @returns {Promise<void>}
+ */
+const updateBalanceWhenRefundLead = async (userId, cost, note) => {
+  const bBalanceInfo = await getBalanceInfo(userId);
+  const aBalanceInfo = Object.assign({}, bBalanceInfo, {main2: bBalanceInfo.main2 + cost});
+  const balanceInstance = await getBalanceInstance(userId);
+  balanceInstance.main2 = aBalanceInfo.main2;
+  const t = await addTransactionCostOfRefundingLead(userId, cost, note, bBalanceInfo, aBalanceInfo);
+  logger.info(`UserService::updateBalanceWhenRefundLead::create transaction of refunding lead, transaction id ${t.id}`);
+  await balanceInstance.save();
+};
+
+const addTransactionCostOfRefundingLead = async (userId, amount, note, before, after) => {
+  const newTransaction = TransactionModel.build({
+    userId,
+    fromUserId: null,
+    amount,
+    type: TransactionTypeConstant.RefundLead,
+    content: 'Refunding lead price',
+    note,
+    bCredit: before.credit || 0,
+    bMain1: before.main1,
+    bMain2: before.main2,
+    bPromo: before.promo,
+    aCredit: after.credit || 0,
+    aMain1: after.main1,
+    aMain2: after.main2,
+    aPromo: after.promo
+  });
+
+  return await newTransaction.save();
+};
+
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
@@ -767,5 +805,6 @@ module.exports = {
   isValidUpdateType,
   mapBalanceInfoToListUser,
   updateMain1,
-  updateBalanceWhenBuyingSomething2
+  updateBalanceWhenBuyingSomething2,
+  updateBalanceWhenRefundLead
 };

@@ -8,5 +8,6 @@ module.exports = {
   ReturnMoney: 7,
   TakeBackMoney: 8,
   ViewPostSale: 9,
-  BuyLead: 10
+  BuyLead: 10,
+  RefundLead: 11
 };

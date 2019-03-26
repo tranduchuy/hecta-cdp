@@ -37,7 +37,7 @@ router.post('/balance', UserCtrl.updateBalance);
 router.post('/balance/sale-cost', UserCtrl.updateBalanceSaleCost);
 router.post('/balance/up-news-cost', UserCtrl.updateBalanceUpNewsCost);
 router.post('/balance/buy-lead', UserCtrl.updateBalanceBuyLead);
-// router.post('/balance/revert-buy-lead', UserCtrl.); // TODO: api refund money to main2
-router.post('/balance/purchase-by-view-sale', UserCtrl.updateBalanceByViewPostOfSale);
+router.post('/balance/revert-buy-lead', checkRoleMiddleware([UR.Master]), UserCtrl.updateBalanceRefundBuyingLead);
+router.post('/balance/purchase-by-view-sale', checkRoleMiddleware([UR.Master]), UserCtrl.updateBalanceByViewPostOfSale);
 
 module.exports = router;

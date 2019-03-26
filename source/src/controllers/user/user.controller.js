@@ -41,6 +41,7 @@ const getListAdminSchema = require('./validation-schemas/get-list-admin.schema')
 const registerAdminSchema = require('./validation-schemas/register-admin.schema');
 const updateStatusAdminSchema = require('./validation-schemas/update-status-admin.schema');
 const updateBalanceByViewingSale = require('./validation-schemas/update-balance-by-viewing-post-of-sale.schena');
+const updateBalanceByRefundingLead = require('./validation-schemas/update-balance-refund-lead.schema');
 
 /**
  *
@@ -985,6 +986,7 @@ const updateBalanceSaleCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
+    logger.info('UserController::updateBalanceSaleCost::called with data', JSON.stringify({cost, note}));
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.SaleByDay);
 
     return res.json({
@@ -1010,6 +1012,7 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
+    logger.info('UserController::updateBalanceUpNewsCost::called with data', JSON.stringify({cost, note}));
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.UpNew);
     return res.json({
       status: HttpCodeConstant.Success,
@@ -1032,6 +1035,7 @@ const updateBalanceBuyLead = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
+    logger.info('UserController::updateBalanceBuyLead::called with data', JSON.stringify({cost, note}));
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.BuyLead);
     return res.json({
       status: HttpCodeConstant.Success,
@@ -1040,6 +1044,30 @@ const updateBalanceBuyLead = async (req, res, next) => {
     });
   } catch (e) {
     logger.error('UserController::updateBalanceBuyLead::error', e);
+    return next(e);
+  }
+};
+
+const updateBalanceRefundBuyingLead = async (req, res, next) => {
+  logger.info('UserController::updateBalanceRefundBuyingLead::called');
+
+  try {
+    const errors = AJV(updateBalanceByRefundingLead, req.body);
+    if (errors.length !== 0) {
+      return next(new Error(errors.join('\n')));
+    }
+
+    const {cost, note, userId} = req.body;
+    logger.info('UserController::updateBalanceRefundBuyingLead::called with data', JSON.stringify({cost, note, userId}));
+    await UserService.updateBalanceWhenRefundLead(userId, cost, note);
+
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
+  } catch (e) {
+    logger.error('UserController::updateBalanceRefundBuyingLead::error', e);
     return next(e);
   }
 };
@@ -1527,5 +1555,6 @@ module.exports = {
   updateBalanceSaleCost,
   updateBalanceUpNewsCost,
   updateBalanceBuyLead,
+  updateBalanceRefundBuyingLead,
   updateBalanceByViewPostOfSale
 };

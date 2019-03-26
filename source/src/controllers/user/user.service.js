@@ -456,7 +456,7 @@ const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
 
         // loại user công ty
         case UserTypeConstant.Company:
-          aBalanceInfo = updateBalanceWhenBuyingSomethingCaseCompanyUser(bBalanceInfo, cost, targetType);
+          aBalanceInfo = await updateBalanceWhenBuyingSomethingCaseCompanyUser(bBalanceInfo, cost, targetType);
           await updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo);
           return resolve('Purchasing sale success');
       }
@@ -557,7 +557,7 @@ const updateBalanceWhenBuyingSomethingCaseCompanyUser = (bBalanceInfo, cost, tar
 
   const personalValid = !!(bBalanceInfo.expiredAt && now.isBefore(expiredAt));
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (!personalValid) {
       return reject('Balance expired');
     }

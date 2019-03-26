@@ -511,20 +511,20 @@ const resendConfirmRegister = async (req, res, next) => {
   try {
     const errors = AJV(resendConfirmEmailSchema, req.query);
     if (errors.length !== 0) {
-      logger.error('UserControllers::resendConfirmRegister::error. Wrong email');
-      return next(new Error('Wrong email'));
+      logger.error('UserControllers::resendConfirmRegister::error.Wrong email');
+      return next(new Error('Thông tin email không chính xác.'));
     }
 
     const {email} = req.query;
     const user = UserService.findByEmailOrUsername(email, '___');
     if (!user) {
       logger.error(`UserController::resendConfirmRegister::error. User not found. Try to get user by email ${email}`);
-      return next(new Error('User not found'));
+      return next(new Error('Không tìm thấy thông tin tài khoản'));
     }
 
     if (user.status !== StatusConstant.PendingOrWaitConfirm) {
       logger.error('UserController::resendConfirmRegister::error. User have already been active');
-      return next(new Error('User have already been active'));
+      return next(new Error('Tài khoản này đã được xác thực, đăng nhập để tiếp tục'));
     }
 
     // Send email
@@ -533,7 +533,7 @@ const resendConfirmRegister = async (req, res, next) => {
 
     return res.json({
       status: HttpCodeConstant.Success,
-      messages: ['Success'],
+      messages: ['Kiểm tra email để xác thực tài khoản'],
       data: {meta: {}, entries: []}
     });
   } catch (e) {
@@ -1296,6 +1296,7 @@ const getListByIdsForNotifies = async (req, res, next) => {
   try {
     const ids = req.query.ids.split(',')
       .filter(v => !isNaN(v))
+      .filter(v => {return v != ""})
       .map(v => parseInt(v, 0));
 
     const users = await UserModel.findAll({

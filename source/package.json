@@ -4,6 +4,7 @@
   "description": "Core data process of hecta.vn",
   "main": "app.js",
   "scripts": {
+    "start": "nodemon app.js",
     "test": "npm test"
   },
   "repository": {

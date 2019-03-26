@@ -22,6 +22,7 @@ const StatusConstant = require('../../constants/status.constant');
 const UserRoleConstant = require('../../constants/user-role.constant');
 const UserTypeConstant = require('../../constants/user-type.constant');
 const TransactionTypeConstant = require('../../constants/transaction-type.constant');
+const PurchaseTypeConstant = require('../../constants/purchase-target-type.constant');
 
 // validate schema
 const loginSchema = require('./validation-schemas/login.schema');
@@ -984,19 +985,13 @@ const updateBalanceSaleCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'SALE')
-      .then(() => {
-        return res.json({
-          status: HttpCodeConstant.Success,
-          messages: ['Success'],
-          data: {meta: {}, entries: []}
-        });
-      })
-      .catch(err => {
-        logger.error(`UserController::updateBalanceSaleCost::error`, err);
-        return next(err);
-      });
+    await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.SaleByDay);
 
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
   } catch (e) {
     logger.error(`UserController::updateBalanceSaleCost::error`, e);
     return next(e);
@@ -1015,18 +1010,12 @@ const updateBalanceUpNewsCost = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, 'UP_NEWS')
-      .then(() => {
-        return res.json({
-          status: HttpCodeConstant.Success,
-          messages: ['Success'],
-          data: {meta: {}, entries: []}
-        });
-      })
-      .catch(err => {
-        logger.error(`UserController::updateBalanceUpNewsCost::error`, err);
-        return next(err);
-      });
+    await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.UpNew);
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
   } catch (e) {
     logger.error(`UserController::updateBalanceUpNewsCost::error`, e);
     return next(e);
@@ -1043,22 +1032,14 @@ const updateBalanceBuyLead = async (req, res, next) => {
     }
 
     const {cost, note} = req.body;
-    UserService.updateBalanceWhenBuyingLead(req.user.id, cost, note)
-      .then(() => {
-        logger.info('UserController::updateBalanceBuyLead::success');
-
-        return res.json({
-          status: HttpCodeConstant.Success,
-          messages: ['Success'],
-          data: {meta: {}, entries: []}
-        });
-      })
-      .catch(err => {
-        logger.error(`UserController::updateBalanceBuyLead::error`, err);
-        return next(err);
-      });
+    await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.BuyLead);
+    return res.json({
+      status: HttpCodeConstant.Success,
+      messages: ['Success'],
+      data: {meta: {}, entries: []}
+    });
   } catch (e) {
-    logger.error('UserController::updateBalanceBuyLead::error');
+    logger.error('UserController::updateBalanceBuyLead::error', e);
     return next(e);
   }
 };

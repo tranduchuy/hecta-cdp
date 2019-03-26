@@ -1,4 +1,5 @@
 module.exports = {
-    Success: 1,
-    Error: 0
+  Error: 0,
+  Success: 1,
+  NotEnoughMoney: 4
 };

@@ -20,7 +20,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const moment = require('moment');
-const randomString = require('randomstring');
 
 // constant files
 const UserRoleConstant = require('../../constants/user-role.constant');
@@ -30,7 +29,10 @@ const RandomString = require('randomstring');
 const StatusConstant = require('../../constants/status.constant');
 const GlobalConstant = require('../../constants/global.constant');
 const TransactionTypeConstant = require('../../constants/transaction-type.constant');
+const PurchaseTypeConstant = require('../../constants/purchase-target-type.constant');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Service);
+
+
 /**
  * Compare hash password with input plain text
  * @param {string} hashed
@@ -46,6 +48,7 @@ const isValidHashPassword = (hashed, plainText) => {
     return false;
   }
 };
+
 
 /**
  *
@@ -92,6 +95,7 @@ const createUser = async ({email, password, type, name, username, phone, address
   return await newUser.save();
 };
 
+
 /**
  * Find user in database by user name or email. Get one
  * @param {string} email
@@ -106,6 +110,7 @@ const findByEmailOrUsername = async (email, username) => {
   });
 };
 
+
 /**
  * Generate token by data
  * @param {object} data
@@ -118,10 +123,12 @@ const generateToken = (data) => {
   });
 };
 
+
 const createBalanceInfo = async (userId) => {
   const newBalance = BalanceModel.build({userId});
   return await newBalance.save();
 };
+
 
 /**
  * Get balance info of user. If user is personal account then get more info of credit and usedCredit
@@ -177,6 +184,7 @@ const getBalanceInfo = async (userId) => {
   return result;
 };
 
+
 /**
  * Check user can update type or not. Will be NOT permitted to be updated if
  * + parent of children
@@ -215,6 +223,7 @@ const isValidUpdateType = async (userId) => {
   }
 };
 
+
 /**
  * Block a user when he/she forgot password, then create token to reset password
  * @param {UserModel} user
@@ -232,6 +241,7 @@ const blockUserForgetPassword = async (user) => {
   return await user.save();
 };
 
+
 /**
  *
  * @param {Date} expiredOn
@@ -240,6 +250,7 @@ const blockUserForgetPassword = async (user) => {
 const isExpiredTokenResetPassword = (expiredOn) => {
   return moment(expiredOn).isBefore(moment());
 };
+
 
 /**
  * Update MAIN_1 money of userId
@@ -257,6 +268,7 @@ const updateMain1 = async (userId, amount) => {
   balance.main1 = balance.main1 + amount;
   return await balance.save();
 };
+
 
 const addTransactionForParentShareCredit = async (parentId, childId, amount, before, after) => {
   const newTransaction = TransactionModel.build({
@@ -279,6 +291,7 @@ const addTransactionForParentShareCredit = async (parentId, childId, amount, bef
   return await newTransaction.save();
 };
 
+
 const addTransactionForChildReceiveCredit = async (parentId, childId, amount, before, after) => {
   const newTransaction = TransactionModel.build({
     userId: childId,
@@ -300,6 +313,7 @@ const addTransactionForChildReceiveCredit = async (parentId, childId, amount, be
   return await newTransaction.save();
 };
 
+
 /**
  * Get balance instance of a user
  * @param {number} userId
@@ -310,6 +324,7 @@ const getBalanceInstance = async (userId) => {
     where: {userId}
   });
 };
+
 
 const addTransactionUpdateBalance = async ({parentId, userId, type, before, after, amount}) => {
   let content = '';
@@ -341,23 +356,6 @@ const addTransactionUpdateBalance = async ({parentId, userId, type, before, afte
   return newTransaction.save();
 };
 
-/**
- * Substract wallet by cost. Wallet maybe: credit, promo, main2, main1
- * @param walletAmount
- * @param cost
- * @return {{walletAmount: *, cost: *}}
- */
-const subtractAmountByAWallet = ({walletAmount, cost}) => {
-  if (walletAmount > cost) {
-    walletAmount -= cost;
-    cost = 0;
-  } else {
-    walletAmount = 0;
-    cost -= walletAmount;
-  }
-
-  return {walletAmount, cost};
-};
 
 const subtractWalletsByCost = (balanceInfo, cost, wallets) => {
   let _cost = cost;
@@ -377,67 +375,17 @@ const subtractWalletsByCost = (balanceInfo, cost, wallets) => {
   return afterBalanceInfo;
 };
 
-const getTotalAmountOfWallets = ({main1, promo, credit}) => {
-  // TODO: chưa handle case main2. Chưa có rule cụ thể
-  return main1 + promo + credit;
-};
 
-const updateBalanceWhenBuyingSomething = (userId, cost, note, targetType) => {
-  // TODO: check expired using balance
-  return new Promise(async (resolve, reject) => {
-    const relation = await UserRelationShipModel.findOne({
-      where: {
-        childId: userId,
-        status: StatusConstant.ChildAccepted,
-        delFlag: GlobalConstant.DelFlag.False
-      }
-    });
-
-    const bBalanceInfo = await getBalanceInfo(userId);
-    bBalanceInfo.credit = bBalanceInfo.credit || 0;
-    const totalAmount = getTotalAmountOfWallets(bBalanceInfo);
-
-    if (totalAmount < cost) {
-      logger.error(`UserService::updateBalanceWhenBuyingSomething::error. Not enough amount for purchasing sale`);
-      return reject(new Error('Credit is not enough to purchasing sale'));
-    }
-
-    const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost);
-    if (relation) {
-      relation.credit = aBalanceInfo.credit;
-      relation.usedCredit = (relation.usedCredit || 0) + cost;
-      await relation.save();
-      logger.info(`UserService::updateBalanceWhenBuyingSomething::Update relation balance.credit. Relation id ${relation.id}`);
-    }
-
-    // update balance instance
-    const balanceInstance = await getBalanceInstance(userId);
-    balanceInstance.main1 = aBalanceInfo.main1;
-    balanceInstance.main2 = aBalanceInfo.main2;
-    balanceInstance.promo = aBalanceInfo.promo;
-    await balanceInstance.save();
-    logger.info(`UserService::updateBalanceWhenBuyingSomething::update balance of user ${userId}`);
-
-    try {
-      if (targetType === 'SALE') {
-        const t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
-        logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
-      } else if (targetType === 'UP_NEWS') {
-        const t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
-        logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
-      }
-    } catch (e) {
-      return reject(e);
-    }
-
-    return resolve('Purchasing sale success');
-  });
-};
-
-
+/**
+ *
+ * @param {number} userId
+ * @param {number} cost
+ * @param {string} note
+ * @param {number} targetType
+ * @returns {Promise<any>}
+ */
 const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
   return new Promise(async (resolve, reject) => {
-
     async function updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo) {
       // update balance instance
       const balanceInstance = await getBalanceInstance(userId);
@@ -451,21 +399,26 @@ const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
       try {
         let t = null;
         switch (targetType) {
-          case 'SALE':
+          case PurchaseTypeConstant.SaleByDay:
             t = await addTransactionCostOfSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
             logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction sale cost, transaction id ${t.id}`);
             break;
 
 
-          case 'UP_NEWS':
+          case PurchaseTypeConstant.UpNew:
             t = await addTransactionCostOfNews(userId, cost, note, bBalanceInfo, aBalanceInfo);
             logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction up news cost, transaction id ${t.id}`);
             break;
 
 
-          case 'VIEW_POST_SALE':
+          case PurchaseTypeConstant.SaleByView:
             t = await addTransactionViewPostSale(userId, cost, note, bBalanceInfo, aBalanceInfo);
             logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction view post sale, transaction id ${t.id}`);
+            break;
+
+          case PurchaseTypeConstant.BuyLead:
+            t = await addTransactionCostOfBuyingLead(userId, cost, note, bBalanceInfo, aBalanceInfo);
+            logger.info(`UserService::updateBalanceWhenBuyingSomething::create transaction of buying lead, transaction id ${t.id}`);
             break;
         }
       } catch (e) {
@@ -473,48 +426,43 @@ const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
       }
     }
 
-    const user = await UserModel.findById(userId);
-    const bBalanceInfo = await getBalanceInfo(userId);
-    bBalanceInfo.credit = bBalanceInfo.credit || 0;
+    try {
+      const user = await UserModel.findById(userId);
+      const bBalanceInfo = await getBalanceInfo(userId);
+      let aBalanceInfo;
+      bBalanceInfo.credit = bBalanceInfo.credit || 0;
 
-    switch (user.type) {
-      case UserTypeConstant.Personal:
-        updateBalanceWhenBuyingSomethingCasePersonalUser(bBalanceInfo, cost)
-          .then(async aBalanceInfo => {
-            const relation = await UserRelationShipModel.findOne({
-              where: {
-                childId: userId,
-                status: StatusConstant.ChildAccepted,
-                delFlag: GlobalConstant.DelFlag.False
-              }
-            });
-
-            if (relation) {
-              relation.credit = aBalanceInfo.credit;
-              relation.usedCredit = (relation.usedCredit || 0) + cost;
-              await relation.save();
-              logger.info(`UserService::updateBalanceWhenBuyingSomething::Update relation balance.credit. Relation id ${relation.id}`);
+      switch (user.type) {
+        // loại user cá nhân
+        case UserTypeConstant.Personal:
+          aBalanceInfo = await updateBalanceWhenBuyingSomethingCasePersonalUser(bBalanceInfo, cost, targetType);
+          const relation = await UserRelationShipModel.findOne({
+            where: {
+              childId: userId,
+              status: StatusConstant.ChildAccepted,
+              delFlag: GlobalConstant.DelFlag.False
             }
+          });
 
-            await updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo);
-            return resolve('Purchasing sale success');
-          })
-          .catch(err => {
-            logger.error(`UserService::updateBalanceWhenBuyingSomething::error. Not enough amount for purchasing ${targetType}`);
-            return reject(new Error(err));
-          });
-        break;
-      case UserTypeConstant.Company:
-        updateBalanceWhenBuyingSomethingCaseCompanyUser(bBalanceInfo, cost)
-          .then(async aBalanceInfo => {
-            await updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo);
-            return resolve('Purchasing sale success');
-          })
-          .catch(err => {
-            logger.error(`UserService::updateBalanceWhenBuyingSomething::error. Not enough amount for purchasing ${targetType}`);
-            return reject(new Error(err));
-          });
-        break;
+          if (relation) {
+            relation.credit = aBalanceInfo.credit;
+            relation.usedCredit = (relation.usedCredit || 0) + cost;
+            await relation.save();
+            logger.info(`UserService::updateBalanceWhenBuyingSomething::Update relation balance.credit. Relation id ${relation.id}`);
+          }
+
+          await updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo);
+          return resolve('Purchasing sale success');
+
+        // loại user công ty
+        case UserTypeConstant.Company:
+          aBalanceInfo = updateBalanceWhenBuyingSomethingCaseCompanyUser(bBalanceInfo, cost, targetType);
+          await updateBalanceInstanceAndTransactions(bBalanceInfo, aBalanceInfo);
+          return resolve('Purchasing sale success');
+      }
+    } catch (e) {
+      logger.error(`UserService::updateBalanceWhenBuyingSomething::error. Not enough amount for purchasing ${targetType}`, e);
+      return reject(new Error(e));
     }
   });
 };
@@ -524,9 +472,10 @@ const updateBalanceWhenBuyingSomething2 = (userId, cost, note, targetType) => {
  *
  * @param {{expiredAt: Date, creditExpiredAt: Date, main1: number, promo: number, credit: number}} bBalanceInfo
  * @param {number} cost
+ * @param {number} targetType
  * @return {Promise<any>}
  */
-const updateBalanceWhenBuyingSomethingCasePersonalUser = (bBalanceInfo, cost) => {
+const updateBalanceWhenBuyingSomethingCasePersonalUser = (bBalanceInfo, cost, targetType) => {
   const now = moment().startOf('date');
   const creditExpiredAt = moment(bBalanceInfo.creditExpiredAt).endOf('date');
   const expiredAt = moment(bBalanceInfo.expiredAt).endOf('date');
@@ -548,36 +497,60 @@ const updateBalanceWhenBuyingSomethingCasePersonalUser = (bBalanceInfo, cost) =>
       const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['credit']);
       return resolve(aBalanceInfo);
     } else if (!creditValid && personalValid) {
-      const total = bBalanceInfo.main1 + bBalanceInfo.promo;
+      if (availableSubtractOnMain2(targetType)) {
+        const total = bBalanceInfo.main1 + +bBalanceInfo.main2 + bBalanceInfo.promo;
 
-      if (total < cost) {
-        return reject('Not enough money');
+        if (total < cost) {
+          return reject('Not enough money');
+        }
+
+        // cẩn thận, trừ tiền theo thứ tự promo -> main2 -> main1
+        const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main2', 'main1']);
+        return resolve(aBalanceInfo);
+      } else {
+        const total = bBalanceInfo.main1 + bBalanceInfo.promo;
+
+        if (total < cost) {
+          return reject('Not enough money');
+        }
+
+        // cẩn thận, trừ tiền theo thứ tự promo -> main1
+        const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main1']);
+        return resolve(aBalanceInfo);
       }
-
-      // cẩn thận, trừ tiền theo thứ tự promo -> main1
-      const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main1']);
-      return resolve(aBalanceInfo);
     } else {
-      const total = bBalanceInfo.main1 + bBalanceInfo.promo + bBalanceInfo.credit;
+      if (availableSubtractOnMain2(targetType)) {
+        const total = bBalanceInfo.main1 + bBalanceInfo.main2 + bBalanceInfo.promo + bBalanceInfo.credit;
+        if (total < cost) {
+          return reject('Not enough money');
+        }
 
-      if (total < cost) {
-        return reject('Not enough money');
+        // cẩn thận, trừ tiền theo thứ tự credit -> promo -> main2 -> main1
+        const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['credit', 'promo', 'main2', 'main1']);
+        return resolve(aBalanceInfo);
+      } else {
+        const total = bBalanceInfo.main1 + bBalanceInfo.promo + bBalanceInfo.credit;
+        if (total < cost) {
+          return reject('Not enough money');
+        }
+
+        // cẩn thận, trừ tiền theo thứ tự credit -> promo -> main1
+        const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['credit', 'promo', 'main1']);
+        return resolve(aBalanceInfo);
       }
-
-      // cẩn thận, trừ tiền theo thứ tự promo -> main1
-      const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['credit', 'promo', 'main1']);
-      return resolve(aBalanceInfo);
     }
   });
 };
+
 
 /**
  *
  * @param {{expiredAt: Date, creditExpiredAt: Date, main1: number, promo: number, credit: number}} bBalanceInfo
  * @param {number} cost
+ * @param {number} targetType
  * @return {Promise<any>}
  */
-const updateBalanceWhenBuyingSomethingCaseCompanyUser = (bBalanceInfo, cost) => {
+const updateBalanceWhenBuyingSomethingCaseCompanyUser = (bBalanceInfo, cost, targetType) => {
   // personal money
   const now = moment().startOf('date');
   const expiredAt = moment(bBalanceInfo.expiredAt).endOf('date');
@@ -589,15 +562,25 @@ const updateBalanceWhenBuyingSomethingCaseCompanyUser = (bBalanceInfo, cost) => 
       return reject('Balance expired');
     }
 
-    const total = bBalanceInfo.main1 + bBalanceInfo.promo;
+    if (availableSubtractOnMain2(targetType)) {
+      const total = bBalanceInfo.main1 + bBalanceInfo.main2 + bBalanceInfo.promo;
+      if (total < cost) {
+        return reject('Not enough money');
+      }
 
-    if (total < cost) {
-      return reject('Not enough money');
+      // cẩn thận, trừ tiền theo thứ tự promo -> main2 -> main1
+      const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main2', 'main1']);
+      return resolve(aBalanceInfo);
+    } else {
+      const total = bBalanceInfo.main1 + bBalanceInfo.promo;
+      if (total < cost) {
+        return reject('Not enough money');
+      }
+
+      // cẩn thận, trừ tiền theo thứ tự promo -> main1
+      const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main1']);
+      return resolve(aBalanceInfo);
     }
-
-    // cẩn thận, trừ tiền theo thứ tự promo -> main1
-    const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['promo', 'main1']);
-    return resolve(aBalanceInfo);
   });
 };
 
@@ -645,6 +628,7 @@ const addTransactionCostOfNews = async (userId, amount, note, before, after) => 
   return await newTransaction.save();
 };
 
+
 const addTransactionViewPostSale = async (userId, amount, note, before, after) => {
   const newTransaction = TransactionModel.build({
     userId,
@@ -666,6 +650,7 @@ const addTransactionViewPostSale = async (userId, amount, note, before, after) =
   return await newTransaction.save();
 };
 
+
 const addTransactionCostOfBuyingLead = async (userId, amount, note, before, after) => {
   const newTransaction = TransactionModel.build({
     userId,
@@ -685,45 +670,6 @@ const addTransactionCostOfBuyingLead = async (userId, amount, note, before, afte
   });
 
   return await newTransaction.save();
-};
-
-
-const updateBalanceWhenBuyingLead = (userId, cost, note) => {
-  return new Promise(async (resolve, reject) => {
-    // const user = await UserModel.findById(userId);
-    const bBalanceInfo = await getBalanceInfo(userId);
-
-    if (bBalanceInfo.main1 < cost) {
-      const msg = `Not enough money for buying lead ${cost}`;
-      return reject(new Error(msg));
-    }
-
-    // check expired date of balance
-    const now = moment().startOf('date');
-    const expiredAt = moment(bBalanceInfo.expiredAt).endOf('date');
-    const personalValid = !!(bBalanceInfo.expiredAt && now.isBefore(expiredAt));
-    if (!personalValid) {
-      const msg = `Balance expired`;
-      return reject(new Error(msg));
-    }
-
-    // calculate after subtract main1 of balance
-    const aBalanceInfo = subtractWalletsByCost(bBalanceInfo, cost, ['main1']);
-
-    // update balance instance (record)
-    const balanceInstance = await getBalanceInstance(userId);
-    balanceInstance.main1 = aBalanceInfo.main1;
-    balanceInstance.main2 = aBalanceInfo.main2;
-    balanceInstance.promo = aBalanceInfo.promo;
-    await balanceInstance.save();
-    logger.info(`UserService::updateBalanceWhenBuyingLead::update balance of user ${userId}`);
-
-    // create transaction history
-    const t = await addTransactionCostOfBuyingLead(userId, cost, note, bBalanceInfo, aBalanceInfo);
-    logger.info(`UserService::updateBalanceWhenBuyingLead::create transaction of buying lead, transaction id ${t.id}`);
-
-    return resolve('Purchasing sale success');
-  });
 };
 
 
@@ -767,6 +713,7 @@ const isSearchLikeProperty = (propertyNm) => {
   return UserConstant.queryProperties.like.some(q => q === propertyNm);
 };
 
+
 /**
  *
  * @param propertyNm
@@ -776,6 +723,7 @@ const isSearchExactProperty = (propertyNm) => {
   return UserConstant.queryProperties.exactly.some(q => q === propertyNm);
 };
 
+
 const mapBalanceInfoToListUser = async (users) => {
   return await Promise.all(users.map(async (user) => {
     user.balance = await getBalanceInfo(user.id);
@@ -783,16 +731,28 @@ const mapBalanceInfoToListUser = async (users) => {
   }));
 };
 
+
 const findById = async (userId) => {
   return await UserModel.findById(userId);
+};
+
+
+/**
+ *
+ * @param {number} targetType
+ * @return {boolean}
+ */
+const availableSubtractOnMain2 = (targetType) => {
+  return [
+    PurchaseTypeConstant.SaleByView,
+    PurchaseTypeConstant.BuyLead
+  ].includes(targetType);
 };
 
 module.exports = {
   addTransactionForParentShareCredit,
   addTransactionForChildReceiveCredit,
   addTransactionUpdateBalance,
-  addTransactionCostOfSale,
-  addTransactionCostOfNews,
   blockUserForgetPassword,
   createBalanceInfo,
   createUser,
@@ -807,7 +767,5 @@ module.exports = {
   isValidUpdateType,
   mapBalanceInfoToListUser,
   updateMain1,
-  updateBalanceWhenBuyingSomething,
-  updateBalanceWhenBuyingSomething2,
-  updateBalanceWhenBuyingLead
+  updateBalanceWhenBuyingSomething2
 };

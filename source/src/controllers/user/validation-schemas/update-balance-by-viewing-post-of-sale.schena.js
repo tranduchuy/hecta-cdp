@@ -20,5 +20,5 @@ module.exports = {
       note: 'Note should have 20 characters'
     }
   },
-  required: ['userId', 'cost', 'content']
+  required: ['userId', 'cost', 'note']
 };

@@ -70,6 +70,7 @@ const login = async (req, res, next) => {
       return next(new Error('User not found'));
     }
 
+    console.log(user.passwordHash, password);
     if (!UserService.isValidHashPassword(user.passwordHash, password)) {
       logger.error(`UserController::login::error. Wrong password. Try input password "${password}" for user "${user.id}"`);
       return next(new Error('Wrong password'));
@@ -1475,7 +1476,7 @@ const updateBalanceByViewPostOfSale = async (req, res, next) => {
     const {userId, cost, note} = req.body;
     logger.info('UserController::updateBalanceByViewPostOfSale::called with params', JSON.stringify({
       userId,
-      code,
+      cost,
       note
     }));
 
@@ -1489,7 +1490,7 @@ const updateBalanceByViewPostOfSale = async (req, res, next) => {
       throw new Error('User not found');
     }
 
-    await UserService.updateBalanceWhenBuyingSomething2(userId, cost, note, 'VIEW_POST_SALE');
+    await UserService.updateBalanceWhenBuyingSomething2(userId, cost, note, PurchaseTypeConstant.SaleByView);
     logger.info('UserController::updateBalanceByViewPostOfSale::success');
 
     return res.json({

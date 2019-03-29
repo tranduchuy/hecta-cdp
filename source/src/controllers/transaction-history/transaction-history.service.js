@@ -3,6 +3,7 @@ const StatusConstant = require('../../constants/status.constant');
 const log4js = require('log4js');
 const logger = log4js.getLogger(GlobalConstant.LoggerTargets.Controller);
 const moment = require('moment');
+const Sequelize = require('sequelize');
 
 // models
 /**
@@ -29,22 +30,18 @@ const extractSearchCondition = function (req, childId) {
     userId: childId || req.user.id
   };
 
-  if (childId) {
-
-  }
-
   const {startDay, endDay, type} = req.query;
 
   if (startDay) {
     cond.createdAt = cond.createdAt || {};
     const dateTimeStart = new Date(startDay);
-    cond.createdAt['$gte'] = moment(dateTimeStart).format("YYYY-MM-DD HH:mm:ss");
+    cond.createdAt[Sequelize.Op.gte] = moment(dateTimeStart).format("YYYY-MM-DD HH:mm:ss");
   }
 
   if (endDay) {
     cond.createdAt = cond.createdAt || {};
     const dateTimeEnd = new Date(endDay);
-    cond.createdAt['$lte'] = moment(dateTimeEnd).format("YYYY-MM-DD HH:mm:ss");
+    cond.createdAt[Sequelize.Op.lte] = moment(dateTimeEnd).format("YYYY-MM-DD HH:mm:ss");
   }
 
   if (type) {

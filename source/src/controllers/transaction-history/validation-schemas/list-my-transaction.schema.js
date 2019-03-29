@@ -1,7 +1,7 @@
 const transType = require('../../../constants/transaction-type.constant');
 const TransConstant = require('../transaction-history.constant');
 const types = Object.keys(transType).map((key) => {
-  return transType[key]
+  return transType[key].toString();
 });
 
 module.exports = {
@@ -35,7 +35,7 @@ module.exports = {
       page: 'Page should be a number',
       startDay: 'Start day should have pattern yyyy-mm-dd',
       endDay: 'End day should have pattern yyyy-mm-dd',
-      type: `Invalid type. It should be ${type.join(',')}`,
+      type: `Invalid type. It should be ${types.join(',')}`,
       limit: 'Limit should be a number'
     }
   }

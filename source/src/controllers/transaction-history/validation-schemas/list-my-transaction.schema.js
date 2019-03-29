@@ -5,7 +5,6 @@ module.exports = {
     properties: {
         page: {
             type: 'string',
-            pattern: '\d*'
         },
         startDay: {
             type: 'string', //yyyy-mm-dd
@@ -17,12 +16,9 @@ module.exports = {
         },
         type: {
             type: 'string',
-            enum: Object.keys(transType).map((key) => {return transType[key]})
         },
         limit: {
             type: 'string',
-            pattern: '\d*',
-            maxLength: 3 // 999
         },
     },
     required: []

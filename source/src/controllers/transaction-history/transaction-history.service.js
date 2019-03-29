@@ -29,10 +29,6 @@ const extractSearchCondition = function (req, childId) {
     userId: childId || req.user.id
   };
 
-  if (childId) {
-
-  }
-
   const {startDay, endDay, type} = req.query;
 
   if (startDay) {

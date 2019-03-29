@@ -25,5 +25,5 @@ module.exports = {
       adStatId: 'Field adStatId should have 24 characters as mongoID'
     }
   },
-  required: ['userId', 'cost', 'note']
+  required: ['userId', 'cost', 'saleId', 'adStatId']
 };

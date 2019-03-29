@@ -9,17 +9,17 @@ module.exports = {
       type: 'number',
       minimum: 0
     },
-    note: {
+    leadId: {
       type: 'string',
       minLength: 24
     }
   },
-  required: ['userId','cost', 'note'],
+  required: ['userId', 'cost', 'leadId'],
   errorMessage: {
     properties: {
       userId: 'User id is required as number >= 1',
       cost: 'Cost must be a number >= 0',
-      note: 'Should provide more info about lead'
+      leadId: 'Field leadId should be 24 string length as mongoID'
     }
   }
 };

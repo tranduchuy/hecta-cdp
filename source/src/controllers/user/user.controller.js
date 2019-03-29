@@ -41,6 +41,7 @@ const getListAdminSchema = require('./validation-schemas/get-list-admin.schema')
 const registerAdminSchema = require('./validation-schemas/register-admin.schema');
 const updateStatusAdminSchema = require('./validation-schemas/update-status-admin.schema');
 const updateBalanceByViewingSale = require('./validation-schemas/update-balance-by-viewing-post-of-sale.schena');
+const updateBalanceByBuyingLead = require('./validation-schemas/update-balance-by-buy-lead.schema');
 const updateBalanceByRefundingLead = require('./validation-schemas/update-balance-refund-lead.schema');
 
 /**
@@ -974,7 +975,6 @@ const updateBalance = async (req, res, next) => {
  */
 const updateBalanceSaleCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceSaleCost::called`);
-  // TODO: note property should include post id (mongo id)
 
   try {
     const errors = AJV(updateBalanceSaleCostSchema, req.body);
@@ -986,8 +986,9 @@ const updateBalanceSaleCost = async (req, res, next) => {
       });
     }
 
-    const {cost, note} = req.body;
-    logger.info('UserController::updateBalanceSaleCost::called with data', JSON.stringify({cost, note}));
+    const {cost, saleId} = req.body;
+    logger.info('UserController::updateBalanceSaleCost::called with data', JSON.stringify({cost, saleId}));
+    const note = JSON.stringify({saleId});
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.SaleByDay);
 
     return res.json({
@@ -1003,18 +1004,23 @@ const updateBalanceSaleCost = async (req, res, next) => {
 
 const updateBalanceUpNewsCost = async (req, res, next) => {
   logger.info(`UserController::updateBalanceUpNewsCost::called`);
-  // note property should include sale_id (mongo id)
 
   try {
     // using same schema with function updateBalanceSaleCost
     const errors = AJV(updateBalanceSaleCostSchema, req.body);
     if (errors.length !== 0) {
-      return next(new Error(errors.join('\n')));
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
     }
 
-    const {cost, note} = req.body;
-    logger.info('UserController::updateBalanceUpNewsCost::called with data', JSON.stringify({cost, note}));
+    const {cost, saleId} = req.body;
+    logger.info('UserController::updateBalanceUpNewsCost::called with data', JSON.stringify({cost, saleId}));
+    const note = JSON.stringify({saleId});
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.UpNew);
+
     return res.json({
       status: HttpCodeConstant.Success,
       messages: ['Success'],
@@ -1030,14 +1036,20 @@ const updateBalanceBuyLead = async (req, res, next) => {
   logger.info('UserController::updateBalanceBuyLead::called');
 
   try {
-    const errors = AJV(updateBalanceSaleCostSchema, req.body);
+    const errors = AJV(updateBalanceByBuyingLead, req.body);
     if (errors.length !== 0) {
-      return next(new Error(errors.join('\n')));
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
     }
 
-    const {cost, note} = req.body;
-    logger.info('UserController::updateBalanceBuyLead::called with data', JSON.stringify({cost, note}));
+    const {cost, leadId} = req.body;
+    logger.info('UserController::updateBalanceBuyLead::called with data', JSON.stringify({cost, leadId}));
+    const note = JSON.stringify({leadId});
     await UserService.updateBalanceWhenBuyingSomething2(req.user.id, cost, note, PurchaseTypeConstant.BuyLead);
+
     return res.json({
       status: HttpCodeConstant.Success,
       messages: ['Success'],
@@ -1055,11 +1067,21 @@ const updateBalanceRefundBuyingLead = async (req, res, next) => {
   try {
     const errors = AJV(updateBalanceByRefundingLead, req.body);
     if (errors.length !== 0) {
-      return next(new Error(errors.join('\n')));
+      return res.json({
+        status: HttpCodeConstant.Error,
+        messages: errors,
+        data: {meta: {}, entries: []}
+      });
     }
 
-    const {cost, note, userId} = req.body;
-    logger.info('UserController::updateBalanceRefundBuyingLead::called with data', JSON.stringify({cost, note, userId}));
+    const {cost, leadId, userId, adStatId} = req.body;
+    logger.info('UserController::updateBalanceRefundBuyingLead::called with data', JSON.stringify({
+      cost,
+      leadId,
+      userId,
+      adStatId
+    }));
+    const note = JSON.stringify({leadId, adStatId});
     await UserService.updateBalanceWhenRefundLead(userId, cost, note);
 
     return res.json({
@@ -1325,7 +1347,9 @@ const getListByIdsForNotifies = async (req, res, next) => {
   try {
     const ids = req.query.ids.split(',')
       .filter(v => !isNaN(v))
-      .filter(v => {return v != ""})
+      .filter(v => {
+        return v != ""
+      })
       .map(v => parseInt(v, 0));
 
     const users = await UserModel.findAll({

@@ -8,16 +8,21 @@ module.exports = {
       type: 'number',
       minimum: 1
     },
-    note: {
+    saleId: {
       type: 'string',
-      minLength: 20
+      minLength: 24
+    },
+    adStatId: {
+      type: 'string',
+      minLength: 24
     }
   },
   errorMessage: {
     properties: {
       userId: 'UserId should be a number',
       cost: 'Cost should be a number >= 0',
-      note: 'Note should have 20 characters'
+      saleId: 'Field saleId should have 24 characters as mongoID',
+      adStatId: 'Field adStatId should have 24 characters as mongoID'
     }
   },
   required: ['userId', 'cost', 'note']

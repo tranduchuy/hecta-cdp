@@ -10,6 +10,7 @@ const seqInitializer = new sequelize(
   mysqlConfig.password,
   {
     host: mysqlConfig.host,
+    port: mysqlConfig.port,
     dialect: 'mysql',
     operatorsAliases: false
   });
